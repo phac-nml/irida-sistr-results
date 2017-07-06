@@ -5,7 +5,7 @@ import ast
 import getpass
 from rauth import OAuth2Service
 
-#logging.basicConfig(level=logging.DEBUG)
+#logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s:%(message)s')
 
 def json2str(json_obj):
 	return json.dumps(json_obj, sort_keys=True, separators=(',',':'), indent=4)
@@ -70,6 +70,26 @@ def get_sample_from_paired(session, paired_path):
 	else:
 		return sample_name
 
+def get_sistr_predictions(session, sistr_analysis_href):
+	sistr_pred_json=None
+
+	analysis=session.get(sistr_analysis_href)
+	if (analysis.ok):
+		analysis_json=analysis.json()
+		logging.debug(json2str(analysis_json))
+
+		sistr_href=get_rel_from_links('outputFile/sistr-predictions', analysis_json['resource']['links'])
+		sistr_pred=get_sistr_predictions_file(session, sistr_href)
+		sistr_pred_json=sistr_pred.json()
+		logging.debug(json2str(sistr_pred_json))
+	else:
+		analysis.raise_for_status()
+
+	if (sistr_pred_json is None):
+		raise Exception("Could not get SISTR predictions for sistr " + sistr_analysis_href)
+
+	return sistr_pred_json
+
 def get_sistr_submissions(session, path):
 	sistr_submissions_for_user=session.get('/api/analysisSubmissions/analysisType/sistr')
 	
@@ -81,9 +101,10 @@ def get_sistr_submissions(session, path):
 				logging.debug(json2str(sistr))
 
 				paired_path=get_rel_from_links('input/paired',sistr['links'])
+				sistr_analysis_href=get_rel_from_links('analysis',sistr['links'])
 
 				sistr_info={}
-				sistr_info['href'] = get_rel_from_links('analysis',sistr['links'])
+				sistr_info['sistr_predictions'] = get_sistr_predictions(session, sistr_analysis_href)
 				sistr_info['sample_name'] = get_sample_from_paired(session, paired_path)
 
 				sistr_analysis_list.append(sistr_info)
@@ -94,7 +115,7 @@ def get_sistr_submissions(session, path):
 	
 	return sistr_analysis_list
 
-def get_sistr_predictions(session, sistr_href):
+def get_sistr_predictions_file(session, sistr_href):
 	return session.get(sistr_href, headers={'Accept': 'text/plain'})
 
 client_id='jupiter'
@@ -109,30 +130,10 @@ session=get_oauth2_session(client_id,client_secret,username,password,base_url)
 
 sistr_list=get_sistr_submissions(session,'/api/analysisSubmissions/analysisType/sistr')
 
-#sistr_submissions_for_user=session.get('/api/analysisSubmissions/analysisType/sistr')
-
-sistr_results=[]
-for sistr_info in sistr_list:
-	a=sistr_info['href']
-	sistr_result={}
-	sistr_result['sample_name']=sistr_info['sample_name']
-
-	analysis=session.get(a)
-	if (analysis.ok):
-		analysis_json=analysis.json()
-		logging.debug(json2str(analysis_json))
-
-		sistr_href=get_rel_from_links('outputFile/sistr-predictions', analysis_json['resource']['links'])
-		sistr_pred=get_sistr_predictions(session, sistr_href)
-		sistr_pred_json=sistr_pred.json()
-		logging.debug(json2str(sistr_pred_json))
-
-		sistr_result['sistr_predictions']=sistr_pred_json
-
-	sistr_results.append(sistr_result)
+logging.debug(sistr_list)
 
 print "Sample_name\tSerovar\tSerovar_antigen\tSerovar_cgmlst\tqc_status"
-for s in sistr_results:
+for s in sistr_list:
 	sample_name=s['sample_name']
 	sistr_predictions=s['sistr_predictions'][0]
 	if (sistr_predictions['serovar_cgmlst'] is None):
