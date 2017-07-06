@@ -1,87 +1,134 @@
 import requests
 import json
+import logging
 import ast
 import getpass
 from rauth import OAuth2Service
 
-def decoder(d):
-	return ast.literal_eval(d)
+#logging.basicConfig(level=logging.DEBUG)
+
+def json2str(json_obj):
+	return json.dumps(json_obj, sort_keys=True, separators=(',',':'), indent=4)
+
+def get_oauth2_session(client_id,client_secret,username,password,base_url):
+	access_token_url=base_url+'/api/oauth/token'
+
+	params = {
+		"data": {
+			"grant_type": "password",
+			"client_id": client_id,
+			"client_secret": client_secret,
+			"username": username,
+			"password": password
+		}
+	}
+	
+	oauth_service = OAuth2Service(
+		client_id=client_id,
+		client_secret=client_secret,
+		name="irida",
+		access_token_url=access_token_url,
+		base_url=base_url
+	)
+	
+	token=oauth_service.get_access_token(decoder=ast.literal_eval,**params)
+	session=oauth_service.get_session(token)
+
+	return session
+
+def get_rel_from_links(rel, links):
+	href=None
+
+	for l in links:
+		if (l['rel'] == rel):
+			href=l['href']
+
+	if (href is None):
+		raise Exception("Could not get rel="+rel+" from links="+json2str(links))
+	else:
+		return href
+
+def get_sample_from_paired(session, paired_path):
+	sample_name = None
+
+	input_result=session.get(paired_path)
+	if (input_result.ok):
+		input_result_json=input_result.json()
+		logging.debug(json2str(input_result_json))
+		links=input_result_json['resource']['resources'][0]['links']
+		sample_href=get_rel_from_links('sample',links)
+
+		sample_json = session.get(sample_href).json()
+		logging.debug(json2str(sample_json))
+
+		sample_name = sample_json['resource']['sampleName']
+	else:
+		input_result.raise_for_status()
+
+	if sample_name is None:
+		raise Exception("Could not get sample_name corresponding to " + paired_path)
+	else:
+		return sample_name
+
+def get_sistr_submissions(session, path):
+	sistr_submissions_for_user=session.get('/api/analysisSubmissions/analysisType/sistr')
+	
+	sistr_analysis_list=[]
+	if (sistr_submissions_for_user.ok):
+		sistr_list=sistr_submissions_for_user.json()['resource']['resources']
+		for sistr in sistr_list:
+			if (sistr['analysisState'] == 'COMPLETED'):
+				logging.debug(json2str(sistr))
+
+				paired_path=get_rel_from_links('input/paired',sistr['links'])
+
+				sistr_info={}
+				sistr_info['href'] = get_rel_from_links('analysis',sistr['links'])
+				sistr_info['sample_name'] = get_sample_from_paired(session, paired_path)
+
+				sistr_analysis_list.append(sistr_info)
+			else:
+				logging.debug('Skipping incompleted sistr submission [id='+sistr['identifier']+']')
+		else:
+			sistr_submissions_for_user.raise_for_status()
+	
+	return sistr_analysis_list
+
+def get_sistr_predictions(session, sistr_href):
+	return session.get(sistr_href, headers={'Accept': 'text/plain'})
 
 client_id='jupiter'
 client_secret='0Th4YM9hHl1Nlu932X8FK3SQ0wYKqJlHJW3x679Q2S'
 username = 'admin'
 password='Password1'
 base_url='http://localhost:8080'
-access_token_url=base_url+'/api/oauth/token'
 
 #password=getpass.getpass('Enter password:')
 
-params = {
-	"data": {
-		"grant_type": "password",
-		"client_id": client_id,
-		"client_secret": client_secret,
-		"username": username,
-		"password": password
-	}
-}
+session=get_oauth2_session(client_id,client_secret,username,password,base_url)
 
-oauth_service = OAuth2Service(
-	client_id=client_id,
-	client_secret=client_secret,
-	name="irida",
-	access_token_url=access_token_url,
-	base_url=base_url
-)
+sistr_list=get_sistr_submissions(session,'/api/analysisSubmissions/analysisType/sistr')
 
-token=oauth_service.get_access_token(decoder=decoder,**params)
-session=oauth_service.get_session(token)
-
-sistr_sub=session.get('/api/analysisSubmissions/analysisType/sistr')
-#sistr_sub=session.get('/irida/api/analysisSubmissions')
-
-analysis_list=[]
-if (sistr_sub.ok):
-	sistr_sub_json=sistr_sub.json()
-#	print json.dumps(sistr_sub_json, sort_keys=True, separators=(',',':'), indent=4)
-	sistr_list=sistr_sub_json['resource']['resources']
-#	print json.dumps(sistr_list,sort_keys=True, separators=(',',':'), indent=4)
-	for s in sistr_list:
-		if (s['analysisState'] == 'COMPLETED' and (s['workflowId'] == 'e8f9cc61-3264-48c6-81d9-02d9e84bccc7' or s['workflowId'] == 'e559af58-a560-4bbd-997e-808bfbe026e2')):
-			analysis_info={}
-			for l in s['links']:
-				if l['rel'] == 'analysis':
-					analysis_info['href'] = l['href']
-				if l['rel'] == 'input/paired':
-					analysis_info['input'] = l['href']
-			analysis_list.append(analysis_info)
+#sistr_submissions_for_user=session.get('/api/analysisSubmissions/analysisType/sistr')
 
 sistr_results=[]
-for ainfo in analysis_list:
-	a=ainfo['href']
-	ainput=ainfo['input']
+for sistr_info in sistr_list:
+	a=sistr_info['href']
 	sistr_result={}
-
-	input_obj=session.get(ainput)
-	if (input_obj.ok):
-		input_obj_json=input_obj.json()
-		links=input_obj_json['resource']['resources'][0]['links']
-		for l in links:
-			if l['rel'] == 'sample':
-				sample_json = session.get(l['href']).json()
-				sample_name = sample_json['resource']['sampleName']
-				sistr_result['sample_name'] = sample_name
+	sistr_result['sample_name']=sistr_info['sample_name']
 
 	analysis=session.get(a)
 	if (analysis.ok):
 		analysis_json=analysis.json()
-#		print json.dumps(analysis_json, sort_keys=True, separators=(',',':'), indent=4)
+		logging.debug(json2str(analysis_json))
 
-		for l in analysis_json['resource']['links']:
-			if l['rel'] == 'outputFile/sistr-predictions':
-				sistr_pred=session.get(l['href'], headers={'Accept': 'text/plain'})
-				#print json.dumps(sistr_pred.json(), sort_keys=True, separators=(',',':'), indent=4)
-				sistr_result['sistr_predictions']=sistr_pred.json()
+		sistr_href=get_rel_from_links('outputFile/sistr-predictions', analysis_json['resource']['links'])
+		sistr_pred=get_sistr_predictions(session, sistr_href)
+		sistr_pred_json=sistr_pred.json()
+		logging.debug(json2str(sistr_pred_json))
+
+		sistr_result['sistr_predictions']=sistr_pred_json
+
 	sistr_results.append(sistr_result)
 
 print "Sample_name\tSerovar\tSerovar_antigen\tSerovar_cgmlst\tqc_status"
