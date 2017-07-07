@@ -1,3 +1,4 @@
+import argparse, sys
 import requests
 import json
 import logging
@@ -118,24 +119,34 @@ def get_sistr_submissions(session, path):
 def get_sistr_predictions_file(session, sistr_href):
 	return session.get(sistr_href, headers={'Accept': 'text/plain'})
 
-client_id='jupiter'
-client_secret='0Th4YM9hHl1Nlu932X8FK3SQ0wYKqJlHJW3x679Q2S'
-username = 'admin'
-password='Password1'
-base_url='http://localhost:8080'
+if __name__ == '__main__':
+	parser = argparse.ArgumentParser(description='Compile SISTR results from an IRIDA instance into a table.')
 
-#password=getpass.getpass('Enter password:')
+	parser.add_argument('--irida-url', action='store', dest='irida_url', help='The URL to the IRIDA instance.')
+	parser.add_argument('--client-id', action='store', dest='client_id', help='The client id for an IRIDA instance.')
+	parser.add_argument('--client-secret', action='store', dest='client_secret', help='The client secret for the IRIDA instance.')
+	parser.add_argument('--username', action='store', dest='username', help='The username for the IRIDA instance.')
+	parser.add_argument('--password', action='store', dest='password', help='The password for the IRIDA instance.')
 
-session=get_oauth2_session(client_id,client_secret,username,password,base_url)
+	if len(sys.argv)==1:
+		parser.print_help()
+		sys.exit(1)
 
-sistr_list=get_sistr_submissions(session,'/api/analysisSubmissions/analysisType/sistr')
-
-logging.debug(sistr_list)
-
-print "Sample_name\tSerovar\tSerovar_antigen\tSerovar_cgmlst\tqc_status"
-for s in sistr_list:
-	sample_name=s['sample_name']
-	sistr_predictions=s['sistr_predictions'][0]
-	if (sistr_predictions['serovar_cgmlst'] is None):
-		sistr_predictions['serovar_cgmlst']='None'
-	print sample_name+"\t"+sistr_predictions['serovar']+"\t"+sistr_predictions['serovar_antigen']+"\t"+sistr_predictions['serovar_cgmlst']+"\t"+sistr_predictions['qc_status']
+	args = parser.parse_args()
+	arg_dict = vars(args)
+	
+	#password=getpass.getpass('Enter password:')
+	
+	session=get_oauth2_session(arg_dict['client_id'],arg_dict['client_secret'],arg_dict['username'],arg_dict['password'], arg_dict['irida_url'])
+	
+	sistr_list=get_sistr_submissions(session,'/api/analysisSubmissions/analysisType/sistr')
+	
+	logging.debug(sistr_list)
+	
+	print "Sample_name\tSerovar\tSerovar_antigen\tSerovar_cgmlst\tqc_status"
+	for s in sistr_list:
+		sample_name=s['sample_name']
+		sistr_predictions=s['sistr_predictions'][0]
+		if (sistr_predictions['serovar_cgmlst'] is None):
+			sistr_predictions['serovar_cgmlst']='None'
+		print sample_name+"\t"+sistr_predictions['serovar']+"\t"+sistr_predictions['serovar_antigen']+"\t"+sistr_predictions['serovar_cgmlst']+"\t"+sistr_predictions['qc_status']
