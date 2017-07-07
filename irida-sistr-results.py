@@ -1,12 +1,11 @@
 import argparse, sys
+import csv
 import requests
 import json
 import logging
 import ast
 import getpass
 from rauth import OAuth2Service
-
-#logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s:%(message)s')
 
 def json2str(json_obj):
 	return json.dumps(json_obj, sort_keys=True, separators=(',',':'), indent=4)
@@ -119,6 +118,31 @@ def get_sistr_submissions(session, path):
 def get_sistr_predictions_file(session, sistr_href):
 	return session.get(sistr_href, headers={'Accept': 'text/plain'})
 
+def sistr_results_to_table(sistr_results, table_file):
+	sistr_writer = csv.writer(table_file, delimiter = "\t", quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+	sistr_writer.writerow([
+		'SampleName',
+		'Serovar',
+		'SerovarAntigen',
+		'SerovarCgMLST',
+		'QCStatus'
+	])
+
+	for result in sistr_results:
+		sample_name = result['sample_name']
+		sistr_predictions = result['sistr_predictions'][0]
+		if (sistr_predictions['serovar_cgmlst'] is None):
+			sistr_predictions['serovar_cgmlst']='None'
+
+		sistr_writer.writerow([
+			sample_name,
+			sistr_predictions['serovar'],
+			sistr_predictions['serovar_antigen'],
+			sistr_predictions['serovar_cgmlst'],
+			sistr_predictions['qc_status']
+		])
+
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Compile SISTR results from an IRIDA instance into a table.')
 
@@ -127,6 +151,7 @@ if __name__ == '__main__':
 	parser.add_argument('--client-secret', action='store', dest='client_secret', help='The client secret for the IRIDA instance.')
 	parser.add_argument('--username', action='store', dest='username', help='The username for the IRIDA instance.')
 	parser.add_argument('--password', action='store', dest='password', help='The password for the IRIDA instance.')
+	parser.add_argument('--verbose', action='store_true', dest='verbose', help='Turn on verbose logging.')
 
 	if len(sys.argv)==1:
 		parser.print_help()
@@ -134,6 +159,11 @@ if __name__ == '__main__':
 
 	args = parser.parse_args()
 	arg_dict = vars(args)
+
+	if (arg_dict['verbose']):
+		logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s:%(message)s')
+	else:
+		logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s')
 	
 	#password=getpass.getpass('Enter password:')
 	
@@ -141,12 +171,4 @@ if __name__ == '__main__':
 	
 	sistr_list=get_sistr_submissions(session,'/api/analysisSubmissions/analysisType/sistr')
 	
-	logging.debug(sistr_list)
-	
-	print "Sample_name\tSerovar\tSerovar_antigen\tSerovar_cgmlst\tqc_status"
-	for s in sistr_list:
-		sample_name=s['sample_name']
-		sistr_predictions=s['sistr_predictions'][0]
-		if (sistr_predictions['serovar_cgmlst'] is None):
-			sistr_predictions['serovar_cgmlst']='None'
-		print sample_name+"\t"+sistr_predictions['serovar']+"\t"+sistr_predictions['serovar_antigen']+"\t"+sistr_predictions['serovar_cgmlst']+"\t"+sistr_predictions['qc_status']
+	sistr_results_to_table(sistr_list,sys.stdout)
