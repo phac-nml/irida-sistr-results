@@ -1,5 +1,5 @@
 import argparse, sys
-import csv
+import csv, xlsxwriter
 import requests
 import json
 import logging
@@ -129,10 +129,13 @@ def get_sistr_submissions(session, path):
 def get_sistr_predictions_file(session, sistr_href):
 	return session.get(sistr_href, headers={'Accept': 'text/plain'})
 
-def sistr_results_to_table(sistr_results, table_file, irida_url):
-	sistr_writer = csv.writer(table_file, delimiter = "\t", quotechar='"', quoting=csv.QUOTE_MINIMAL)
+def sistr_results_to_excel(sistr_results, irida_url, excel_file):
+	workbook = xlsxwriter.Workbook(excel_file)
+	worksheet = workbook.add_worksheet()
 
-	sistr_writer.writerow([
+	row = 0
+	col = 0
+	header = [
 		'SampleName',
 		'Serovar',
 		'SerovarAntigen',
@@ -142,6 +145,60 @@ def sistr_results_to_table(sistr_results, table_file, irida_url):
 		'URL',
 		'IRIDASampleIdentifer',
 		'IRIDAFilePairIdentifier'
+	]
+
+	for item in header:
+		worksheet.write(row,col,item)
+		col += 1
+
+	row = 1
+	for result in sistr_results:
+		sample = result['sample']
+		paired=result['paired_files'][0]
+		sistr_predictions = result['sistr_predictions'][0]
+
+		submission_identifier=result['submission']['identifier']
+		submission_url=irida_url
+		if irida_url.endswith('/'):
+			submission_url += 'analysis/'
+		else:
+			submission_url += '/analysis/'
+		submission_url += submission_identifier
+
+		if (sistr_predictions['serovar_cgmlst'] is None):
+			sistr_predictions['serovar_cgmlst']='None'
+
+		row_data = [
+			sample['sampleName'],
+			sistr_predictions['serovar'],
+			sistr_predictions['serovar_antigen'],
+			sistr_predictions['serovar_cgmlst'],
+			sistr_predictions['qc_status'],
+			sistr_predictions['qc_messages'],
+			submission_url,
+			sample['identifier'],
+			paired['identifier']
+		]
+
+		col = 0
+		for item in row_data:
+			worksheet.write(row,col,item)
+			col += 1
+
+		row += 1
+
+	workbook.close()
+
+def sistr_results_to_table(sistr_results, table_file, irida_url):
+	sistr_writer = csv.writer(table_file, delimiter = "\t", quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+	sistr_writer.writerow([
+		'SampleName',
+		'Serovar',
+		'SerovarAntigen',
+		'SerovarCgMLST',
+		'QCStatus',
+		'URL'
 	])
 
 	for result in sistr_results:
@@ -166,10 +223,7 @@ def sistr_results_to_table(sistr_results, table_file, irida_url):
 			sistr_predictions['serovar_antigen'],
 			sistr_predictions['serovar_cgmlst'],
 			sistr_predictions['qc_status'],
-			sistr_predictions['qc_messages'],
-			submission_url,
-			sample['identifier'],
-			paired['identifier']
+			submission_url
 		])
 
 if __name__ == '__main__':
@@ -181,6 +235,8 @@ if __name__ == '__main__':
 	parser.add_argument('--username', action='store', dest='username', help='The username for the IRIDA instance.')
 	parser.add_argument('--password', action='store', dest='password', help='The password for the IRIDA instance.')
 	parser.add_argument('--verbose', action='store_true', dest='verbose', help='Turn on verbose logging.')
+	parser.add_argument('--tabular', action='store_true', dest='tabular', help='Print results to stdout as tab-deliminited file.')
+	parser.add_argument('--to-excel-file', action='store', dest='excel_file', help='Print results to the given excel file.')
 
 	if len(sys.argv)==1:
 		parser.print_help()
@@ -188,6 +244,11 @@ if __name__ == '__main__':
 
 	args = parser.parse_args()
 	arg_dict = vars(args)
+
+	if not arg_dict['tabular'] and (arg_dict['excel_file'] is None):
+		logging.error("Must use one of --tabular or --to-excel-file [excel-file]")
+		parser.print_help()
+		sys.exit(1)
 
 	if (arg_dict['verbose']):
 		logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s:%(message)s')
@@ -200,4 +261,8 @@ if __name__ == '__main__':
 	
 	sistr_list=get_sistr_submissions(session,'/api/analysisSubmissions/analysisType/sistr')
 	
-	sistr_results_to_table(sistr_list,sys.stdout, arg_dict['irida_url'])
+	if arg_dict['tabular']:
+		sistr_results_to_table(sistr_list,sys.stdout, arg_dict['irida_url'])
+
+	if arg_dict['excel_file'] is not None:
+		sistr_results_to_excel(sistr_list,arg_dict['irida_url'], arg_dict['excel_file'])
