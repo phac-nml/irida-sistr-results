@@ -150,6 +150,13 @@ def sistr_results_to_excel(sistr_results, irida_url, excel_file):
 		'IRIDA File Pair Identifier'
 	]
 
+	worksheet.set_column('A:A', 30)
+	worksheet.set_column('B:B', 20)
+	worksheet.set_column('C:C', 40)
+	worksheet.set_column('D:E', 20)
+	worksheet.set_column('F:G', 40)
+	worksheet.set_column('H:I', 25)
+
 	for item in header:
 		worksheet.write(row,col,item, header_format)
 		col += 1
@@ -253,7 +260,7 @@ if __name__ == '__main__':
 	parser.add_argument('--client-id', action='store', dest='client_id', help='The client id for an IRIDA instance.')
 	parser.add_argument('--client-secret', action='store', dest='client_secret', help='The client secret for the IRIDA instance.')
 	parser.add_argument('--username', action='store', dest='username', help='The username for the IRIDA instance.')
-	parser.add_argument('--password', action='store', dest='password', help='The password for the IRIDA instance.')
+	parser.add_argument('--password', action='store', dest='password', help='The password for the IRIDA instance. Prompts for password if left blank.')
 	parser.add_argument('--verbose', action='store_true', dest='verbose', help='Turn on verbose logging.')
 	parser.add_argument('--tabular', action='store_true', dest='tabular', help='Print results to stdout as tab-deliminited file.')
 	parser.add_argument('--to-excel-file', action='store', dest='excel_file', help='Print results to the given excel file.')
@@ -275,7 +282,8 @@ if __name__ == '__main__':
 	else:
 		logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s')
 	
-	#password=getpass.getpass('Enter password:')
+	if arg_dict['password'] is None:
+		arg_dict['password']=getpass.getpass('Enter password:')
 	
 	session=get_oauth2_session(arg_dict['client_id'],arg_dict['client_secret'],arg_dict['username'],arg_dict['password'], arg_dict['irida_url'])
 	
