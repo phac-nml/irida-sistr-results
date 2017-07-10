@@ -132,23 +132,26 @@ def get_sistr_predictions_file(session, sistr_href):
 def sistr_results_to_excel(sistr_results, irida_url, excel_file):
 	workbook = xlsxwriter.Workbook(excel_file)
 	worksheet = workbook.add_worksheet()
+	header_format = workbook.add_format()
+
+	header_format.set_bold()
 
 	row = 0
 	col = 0
 	header = [
-		'SampleName',
+		'Sample Name',
 		'Serovar',
-		'SerovarAntigen',
-		'SerovarCgMLST',
-		'QCStatus',
-		'QCMessages',
+		'Serovar Antigen',
+		'Serovar cgMLST',
+		'QC Status',
+		'QC Messages',
 		'URL',
-		'IRIDASampleIdentifer',
-		'IRIDAFilePairIdentifier'
+		'IRIDA Sample Identifer',
+		'IRIDA File Pair Identifier'
 	]
 
 	for item in header:
-		worksheet.write(row,col,item)
+		worksheet.write(row,col,item, header_format)
 		col += 1
 
 	row = 1
@@ -174,7 +177,7 @@ def sistr_results_to_excel(sistr_results, irida_url, excel_file):
 			sistr_predictions['serovar_antigen'],
 			sistr_predictions['serovar_cgmlst'],
 			sistr_predictions['qc_status'],
-			sistr_predictions['qc_messages'],
+			sistr_predictions['qc_messages'].replace('|',"\n"),
 			submission_url,
 			sample['identifier'],
 			paired['identifier']
@@ -186,6 +189,23 @@ def sistr_results_to_excel(sistr_results, irida_url, excel_file):
 			col += 1
 
 		row += 1
+
+	format_pass = workbook.add_format({'bg_color': '#DFF0D8'})
+	format_warning = workbook.add_format({'bg_color': '#FCF8E3'})
+	format_fail = workbook.add_format({'bg_color': '#F2DEDE'})
+	worksheet.conditional_format('E1:E'+str(row), {'type': 'cell',
+						       'criteria': '==',
+						       'value': '"PASS"',
+						       'format': format_pass})
+	worksheet.conditional_format('E1:E'+str(row), {'type': 'cell',
+						       'criteria': '==',
+						       'value': '"WARNING"',
+						       'format': format_warning})
+	worksheet.conditional_format('E1:E'+str(row), {'type': 'cell',
+						       'criteria': '==',
+						       'value': '"FAIL"',
+						       'format': format_fail})
+						
 
 	workbook.close()
 
