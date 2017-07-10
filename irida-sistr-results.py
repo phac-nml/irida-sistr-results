@@ -132,11 +132,19 @@ def get_sistr_predictions_file(session, sistr_href):
 def sistr_results_to_excel(sistr_results, irida_url, excel_file):
 	workbook = xlsxwriter.Workbook(excel_file)
 	worksheet = workbook.add_worksheet()
-	header_format = workbook.add_format()
 
+	merged_header_format = workbook.add_format()
+	merged_header_format.set_bold()
+	merged_header_format.set_align('center')
+
+	header_format = workbook.add_format()
 	header_format.set_bold()
 
-	row = 0
+	worksheet.merge_range('B1:D1', 'Serovar', merged_header_format)
+	worksheet.merge_range('E1:F1', 'QC', merged_header_format)
+	worksheet.merge_range('G1:I1', 'IRIDA', merged_header_format)
+
+	row = 1
 	col = 0
 	header = [
 		'Sample Name',
@@ -161,7 +169,7 @@ def sistr_results_to_excel(sistr_results, irida_url, excel_file):
 		worksheet.write(row,col,item, header_format)
 		col += 1
 
-	row = 1
+	row = 2
 	for result in sistr_results:
 		sample = result['sample']
 		paired=result['paired_files'][0]
@@ -184,7 +192,7 @@ def sistr_results_to_excel(sistr_results, irida_url, excel_file):
 			sistr_predictions['serovar_antigen'],
 			sistr_predictions['serovar_cgmlst'],
 			sistr_predictions['qc_status'],
-			sistr_predictions['qc_messages'].replace('|',"\n"),
+			sistr_predictions['qc_messages'].replace(" | ","\n"),
 			submission_url,
 			sample['identifier'],
 			paired['identifier']
