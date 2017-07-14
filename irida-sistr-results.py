@@ -48,6 +48,12 @@ def get_rel_from_links(rel, links):
 	else:
 		return href
 
+def has_rel_in_links(rel, links):
+	for l in links:
+		if (l['rel'] == rel):
+			return True
+	return False
+
 def get_sample_from_paired(session, paired_json):
 	sample = None
 
@@ -83,7 +89,22 @@ def get_sistr_predictions(session, sistr_analysis_href):
 
 	return sistr_pred_json
 
+def get_sistr_results_from_projects(session):
+	sistr_list=[]
+
+	projects=session.get('/api/projects')
+
+	if projects.ok:
+		for project in projects.json()['resource']['resources']:
+			sistr_list += get_sistr_results_for_project(session,project['identifier'])
+	else:
+		projects.raise_for_status()
+
+	return sistr_list
+
 def get_sistr_results_for_project(session, project):
+	sistr_results=[]
+
 	sistr_results_for_project=session.get('/api/projects/'+str(project)+'/samples')
 
 	if sistr_results_for_project.ok:
@@ -94,17 +115,38 @@ def get_sistr_results_for_project(session, project):
 				sample_pairs.raise_for_status()
 
 			for sequencing_object in sample_pairs.json()['resource']['resources']:
-				sistr_info=get_sistr_info_from_sequencing_object(sequencing_object)
+				sistr_info = None
+
+				if (has_rel_in_links('analysis/sistr', sequencing_object['links'])):
+					sistr_rel=get_rel_from_links('analysis/sistr', sequencing_object['links'])
+
+					sistr=session.get(sistr_rel)
+					
+					if (not sistr.ok):
+						sistr.raise_for_status()
+
+					sistr_info=get_sistr_info_from_submission(session,sistr.json()['resource'])
+				else:
+					sistr_info = {'sample': sample,
+							'paired_files': sequencing_object,
+							'has_results': False
+							}
+
+				sistr_results.append(sistr_info)
+				
 	else:
 		sistr_results_for_project.raise_for_status()
+
+	return sistr_results
 	
 def get_sistr_info_from_submission(session, submission):
 	sistr_info={}
 
-	paired_path=get_rel_from_links('input/paired',submission['links'])
-	sistr_analysis_href=get_rel_from_links('analysis',submission['links'])
+	links=submission['links']
+	paired_path=get_rel_from_links('input/paired',links)
+	sistr_analysis_href=get_rel_from_links('analysis',links)
 	
-	unpaired_path=get_rel_from_links('input/unpaired',submission['links'])
+	unpaired_path=get_rel_from_links('input/unpaired',links)
 	unpaired_files=session.get(unpaired_path)
 	
 	if len(unpaired_files.json()['resource']['resources']) > 0:
@@ -120,6 +162,7 @@ def get_sistr_info_from_submission(session, submission):
 	
 		sistr_info['paired_files']=paired_json
 		sistr_info['sistr_predictions'] = get_sistr_predictions(session, sistr_analysis_href)
+		sistr_info['has_results'] = True
 		sistr_info['sample'] = get_sample_from_paired(session, paired_json)
 		sistr_info['submission'] = submission
 	else:
@@ -257,28 +300,32 @@ def sistr_results_to_table(sistr_results, table_file, irida_url):
 
 	for result in sistr_results:
 		sample = result['sample']
-		paired=result['paired_files'][0]
-		sistr_predictions = result['sistr_predictions'][0]
 
-		submission_identifier=result['submission']['identifier']
-		submission_url=irida_url
-		if irida_url.endswith('/'):
-			submission_url += 'analysis/'
+		if (not result['has_results']):
+			sistr_writer.writerow([sample['sampleName']])
 		else:
-			submission_url += '/analysis/'
-		submission_url += submission_identifier
-
-		if (sistr_predictions['serovar_cgmlst'] is None):
-			sistr_predictions['serovar_cgmlst']='None'
-
-		sistr_writer.writerow([
-			sample['sampleName'],
-			sistr_predictions['serovar'],
-			sistr_predictions['serovar_antigen'],
-			sistr_predictions['serovar_cgmlst'],
-			sistr_predictions['qc_status'],
-			submission_url
-		])
+			paired=result['paired_files'][0]
+			sistr_predictions = result['sistr_predictions'][0]
+	
+			submission_identifier=result['submission']['identifier']
+			submission_url=irida_url
+			if irida_url.endswith('/'):
+				submission_url += 'analysis/'
+			else:
+				submission_url += '/analysis/'
+			submission_url += submission_identifier
+	
+			if (sistr_predictions['serovar_cgmlst'] is None):
+				sistr_predictions['serovar_cgmlst']='None'
+	
+			sistr_writer.writerow([
+				sample['sampleName'],
+				sistr_predictions['serovar'],
+				sistr_predictions['serovar_antigen'],
+				sistr_predictions['serovar_cgmlst'],
+				sistr_predictions['qc_status'],
+				submission_url
+			])
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Compile SISTR results from an IRIDA instance into a table.')
@@ -314,7 +361,8 @@ if __name__ == '__main__':
 	
 	session=get_oauth2_session(arg_dict['client_id'],arg_dict['client_secret'],arg_dict['username'],arg_dict['password'], arg_dict['irida_url'])
 	
-	sistr_list=get_sistr_submissions_for_user(session,'/api/analysisSubmissions/analysisType/sistr')
+	#sistr_list=get_sistr_submissions_for_user(session,'/api/analysisSubmissions/analysisType/sistr')
+	sistr_list=get_sistr_results_from_projects(session)
 	
 	if arg_dict['tabular']:
 		sistr_results_to_table(sistr_list,sys.stdout, arg_dict['irida_url'])
