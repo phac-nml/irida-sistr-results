@@ -83,7 +83,51 @@ def get_sistr_predictions(session, sistr_analysis_href):
 
 	return sistr_pred_json
 
-def get_sistr_submissions(session, path):
+def get_sistr_results_for_project(session, project):
+	sistr_results_for_project=session.get('/api/projects/'+str(project)+'/samples')
+
+	if sistr_results_for_project.ok:
+		for sample in sistr_results_for_project.json()['resource']['resources']:
+			sample_pairs=session.get('/api/samples/'+sample['identifier']+'/pairs')
+
+			if (not sample_pairs.ok):
+				sample_pairs.raise_for_status()
+
+			for sequencing_object in sample_pairs.json()['resource']['resources']:
+				sistr_info=get_sistr_info_from_sequencing_object(sequencing_object)
+	else:
+		sistr_results_for_project.raise_for_status()
+	
+def get_sistr_info_from_submission(session, submission):
+	sistr_info={}
+
+	paired_path=get_rel_from_links('input/paired',submission['links'])
+	sistr_analysis_href=get_rel_from_links('analysis',submission['links'])
+	
+	unpaired_path=get_rel_from_links('input/unpaired',submission['links'])
+	unpaired_files=session.get(unpaired_path)
+	
+	if len(unpaired_files.json()['resource']['resources']) > 0:
+		self_href = get_rel_from_links('self', submission['links'])
+		raise Exception('Error: unpaired files were found for analysis submission ' + self_href + '. SISTR results from unpaired files not currently supported')
+	
+	paired=session.get(paired_path)
+	
+	if (paired.ok):
+		logging.debug(json2str(paired.json()))
+	
+		paired_json=paired.json()['resource']['resources']
+	
+		sistr_info['paired_files']=paired_json
+		sistr_info['sistr_predictions'] = get_sistr_predictions(session, sistr_analysis_href)
+		sistr_info['sample'] = get_sample_from_paired(session, paired_json)
+		sistr_info['submission'] = submission
+	else:
+		paired.raise_for_status()
+
+	return sistr_info
+
+def get_sistr_submissions_for_user(session, path):
 	sistr_submissions_for_user=session.get('/api/analysisSubmissions/analysisType/sistr')
 	
 	sistr_analysis_list=[]
@@ -93,32 +137,7 @@ def get_sistr_submissions(session, path):
 			if (sistr['analysisState'] == 'COMPLETED'):
 				logging.debug(json2str(sistr))
 
-				paired_path=get_rel_from_links('input/paired',sistr['links'])
-				sistr_analysis_href=get_rel_from_links('analysis',sistr['links'])
-
-				unpaired_path=get_rel_from_links('input/unpaired',sistr['links'])
-				unpaired_files=session.get(unpaired_path)
-
-				if len(unpaired_files.json()['resource']['resources']) > 0:
-					self_href = get_rel_from_links('self', sistr['links'])
-					raise Exception('Error: unpaired files were found for analysis submission ' + self_href + '. SISTR results from unpaired files not currently supported')
-
-				sistr_info={}
-				paired=session.get(paired_path)
-
-				if (paired.ok):
-					logging.debug(json2str(paired.json()))
-
-					paired_json=paired.json()['resource']['resources']
-
-					sistr_info['paired_files']=paired_json
-					sistr_info['sistr_predictions'] = get_sistr_predictions(session, sistr_analysis_href)
-					sistr_info['sample'] = get_sample_from_paired(session, paired_json)
-					sistr_info['submission'] = sistr
-
-					sistr_analysis_list.append(sistr_info)
-				else:
-					paired.raise_for_status()
+				sistr_analysis_list.append(get_sistr_info_from_submission(session, sistr))
 			else:
 				logging.debug('Skipping incompleted sistr submission [id='+sistr['identifier']+']')
 		else:
@@ -295,7 +314,7 @@ if __name__ == '__main__':
 	
 	session=get_oauth2_session(arg_dict['client_id'],arg_dict['client_secret'],arg_dict['username'],arg_dict['password'], arg_dict['irida_url'])
 	
-	sistr_list=get_sistr_submissions(session,'/api/analysisSubmissions/analysisType/sistr')
+	sistr_list=get_sistr_submissions_for_user(session,'/api/analysisSubmissions/analysisType/sistr')
 	
 	if arg_dict['tabular']:
 		sistr_results_to_table(sistr_list,sys.stdout, arg_dict['irida_url'])
