@@ -10,186 +10,187 @@ from rauth import OAuth2Service
 def json2str(json_obj):
 	return json.dumps(json_obj, sort_keys=True, separators=(',',':'), indent=4)
 
-def get_oauth2_session(client_id,client_secret,username,password,base_url):
-	access_token_url=base_url+'/api/oauth/token'
+class IridaSistrResults:
 
-	params = {
-		"data": {
-			"grant_type": "password",
-			"client_id": client_id,
-			"client_secret": client_secret,
-			"username": username,
-			"password": password
+	def __init__(self,client_id,client_secret,username,password,base_url):
+		access_token_url=base_url+'/api/oauth/token'
+	
+		params = {
+			"data": {
+				"grant_type": "password",
+				"client_id": client_id,
+				"client_secret": client_secret,
+				"username": username,
+				"password": password
+			}
 		}
-	}
+		
+		oauth_service = OAuth2Service(
+			client_id=client_id,
+			client_secret=client_secret,
+			name="irida",
+			access_token_url=access_token_url,
+			base_url=base_url
+		)
+		
+		token=oauth_service.get_access_token(decoder=ast.literal_eval,**params)
+		self.session=oauth_service.get_session(token)
+
+	def _get_rel_from_links(self, rel, links):
+		href=None
 	
-	oauth_service = OAuth2Service(
-		client_id=client_id,
-		client_secret=client_secret,
-		name="irida",
-		access_token_url=access_token_url,
-		base_url=base_url
-	)
+		for l in links:
+			if (l['rel'] == rel):
+				href=l['href']
 	
-	token=oauth_service.get_access_token(decoder=ast.literal_eval,**params)
-	session=oauth_service.get_session(token)
-
-	return session
-
-def get_rel_from_links(rel, links):
-	href=None
-
-	for l in links:
-		if (l['rel'] == rel):
-			href=l['href']
-
-	if (href is None):
-		raise Exception("Could not get rel="+rel+" from links="+json2str(links))
-	else:
-		return href
-
-def has_rel_in_links(rel, links):
-	for l in links:
-		if (l['rel'] == rel):
-			return True
-	return False
-
-def get_sample_from_paired(session, paired_json):
-	sample = None
-
-	links=paired_json[0]['links']
-	sample_href=get_rel_from_links('sample',links)
-	sample_json = session.get(sample_href).json()
-	logging.debug(json2str(sample_json))
-
-	sample = sample_json['resource']
-
-	if sample is None:
-		raise Exception("Could not get sample corresponding to " + paired_path)
-	else:
-		return sample
-
-def get_sistr_predictions(session, sistr_analysis_href):
-	sistr_pred_json=None
-
-	analysis=session.get(sistr_analysis_href)
-	if (analysis.ok):
-		analysis_json=analysis.json()
-		logging.debug(json2str(analysis_json))
-
-		sistr_href=get_rel_from_links('outputFile/sistr-predictions', analysis_json['resource']['links'])
-		sistr_pred=get_sistr_predictions_file(session, sistr_href)
-		sistr_pred_json=sistr_pred.json()
-		logging.debug(json2str(sistr_pred_json))
-	else:
-		analysis.raise_for_status()
-
-	if (sistr_pred_json is None):
-		raise Exception("Could not get SISTR predictions for sistr " + sistr_analysis_href)
-
-	return sistr_pred_json
-
-def get_sistr_results_from_projects(session):
-	sistr_list=[]
-
-	projects=session.get('/api/projects')
-
-	if projects.ok:
-		for project in projects.json()['resource']['resources']:
-			sistr_list += get_sistr_results_for_project(session,project['identifier'])
-	else:
-		projects.raise_for_status()
-
-	return sistr_list
-
-def get_sistr_results_for_project(session, project):
-	sistr_results=[]
-
-	sistr_results_for_project=session.get('/api/projects/'+str(project)+'/samples')
-
-	if sistr_results_for_project.ok:
-		for sample in sistr_results_for_project.json()['resource']['resources']:
-			sample_pairs=session.get('/api/samples/'+sample['identifier']+'/pairs')
-
-			if (not sample_pairs.ok):
-				sample_pairs.raise_for_status()
-
-			for sequencing_object in sample_pairs.json()['resource']['resources']:
-				sistr_info = None
-
-				if (has_rel_in_links('analysis/sistr', sequencing_object['links'])):
-					sistr_rel=get_rel_from_links('analysis/sistr', sequencing_object['links'])
-
-					sistr=session.get(sistr_rel)
-					
-					if (not sistr.ok):
-						sistr.raise_for_status()
-
-					sistr_info=get_sistr_info_from_submission(session,sistr.json()['resource'])
-				else:
-					sistr_info = {'sample': sample,
-							'paired_files': sequencing_object,
-							'has_results': False
-							}
-
-				sistr_results.append(sistr_info)
-				
-	else:
-		sistr_results_for_project.raise_for_status()
-
-	return sistr_results
-	
-def get_sistr_info_from_submission(session, submission):
-	sistr_info={}
-
-	links=submission['links']
-	paired_path=get_rel_from_links('input/paired',links)
-	sistr_analysis_href=get_rel_from_links('analysis',links)
-	
-	unpaired_path=get_rel_from_links('input/unpaired',links)
-	unpaired_files=session.get(unpaired_path)
-	
-	if len(unpaired_files.json()['resource']['resources']) > 0:
-		self_href = get_rel_from_links('self', submission['links'])
-		raise Exception('Error: unpaired files were found for analysis submission ' + self_href + '. SISTR results from unpaired files not currently supported')
-	
-	paired=session.get(paired_path)
-	
-	if (paired.ok):
-		logging.debug(json2str(paired.json()))
-	
-		paired_json=paired.json()['resource']['resources']
-	
-		sistr_info['paired_files']=paired_json
-		sistr_info['sistr_predictions'] = get_sistr_predictions(session, sistr_analysis_href)
-		sistr_info['has_results'] = True
-		sistr_info['sample'] = get_sample_from_paired(session, paired_json)
-		sistr_info['submission'] = submission
-	else:
-		paired.raise_for_status()
-
-	return sistr_info
-
-def get_sistr_submissions_for_user(session, path):
-	sistr_submissions_for_user=session.get('/api/analysisSubmissions/analysisType/sistr')
-	
-	sistr_analysis_list=[]
-	if (sistr_submissions_for_user.ok):
-		sistr_list=sistr_submissions_for_user.json()['resource']['resources']
-		for sistr in sistr_list:
-			if (sistr['analysisState'] == 'COMPLETED'):
-				logging.debug(json2str(sistr))
-
-				sistr_analysis_list.append(get_sistr_info_from_submission(session, sistr))
-			else:
-				logging.debug('Skipping incompleted sistr submission [id='+sistr['identifier']+']')
+		if (href is None):
+			raise Exception("Could not get rel="+rel+" from links="+json2str(links))
 		else:
-			sistr_submissions_for_user.raise_for_status()
-	
-	return sistr_analysis_list
+			return href
 
-def get_sistr_predictions_file(session, sistr_href):
-	return session.get(sistr_href, headers={'Accept': 'text/plain'})
+	def _has_rel_in_links(self, rel, links):
+		for l in links:
+			if (l['rel'] == rel):
+				return True
+		return False
+
+	def get_sistr_predictions(self, sistr_analysis_href):
+		sistr_pred_json=None
+	
+		analysis=self.session.get(sistr_analysis_href)
+		if (analysis.ok):
+			analysis_json=analysis.json()
+			logging.debug(json2str(analysis_json))
+	
+			sistr_href=self._get_rel_from_links('outputFile/sistr-predictions', analysis_json['resource']['links'])
+			sistr_pred=self.get_sistr_predictions_file(sistr_href)
+			sistr_pred_json=sistr_pred.json()
+			logging.debug(json2str(sistr_pred_json))
+		else:
+			analysis.raise_for_status()
+	
+		if (sistr_pred_json is None):
+			raise Exception("Could not get SISTR predictions for sistr " + sistr_analysis_href)
+	
+		return sistr_pred_json
+
+	def get_sample_from_paired(self, paired_json):
+		sample = None
+	
+		links=paired_json[0]['links']
+		sample_href=self._get_rel_from_links('sample',links)
+		sample_json = self.session.get(sample_href).json()
+		logging.debug(json2str(sample_json))
+	
+		sample = sample_json['resource']
+	
+		if sample is None:
+			raise Exception("Could not get sample corresponding to " + paired_path)
+		else:
+			return sample
+	
+	
+	def get_sistr_results_from_projects(self):
+		sistr_list=[]
+	
+		projects=self.session.get('/api/projects')
+	
+		if projects.ok:
+			for project in projects.json()['resource']['resources']:
+				sistr_list += self.get_sistr_results_for_project(project['identifier'])
+		else:
+			projects.raise_for_status()
+	
+		return sistr_list
+	
+	def get_sistr_results_for_project(self, project):
+		sistr_results=[]
+	
+		sistr_results_for_project=self.session.get('/api/projects/'+str(project)+'/samples')
+	
+		if sistr_results_for_project.ok:
+			for sample in sistr_results_for_project.json()['resource']['resources']:
+				sample_pairs=self.session.get('/api/samples/'+sample['identifier']+'/pairs')
+	
+				if (not sample_pairs.ok):
+					sample_pairs.raise_for_status()
+	
+				for sequencing_object in sample_pairs.json()['resource']['resources']:
+					sistr_info = None
+	
+					if (self._has_rel_in_links('analysis/sistr', sequencing_object['links'])):
+						sistr_rel=self._get_rel_from_links('analysis/sistr', sequencing_object['links'])
+	
+						sistr=self.session.get(sistr_rel)
+						
+						if (not sistr.ok):
+							sistr.raise_for_status()
+	
+						sistr_info=self.get_sistr_info_from_submission(sistr.json()['resource'])
+					else:
+						sistr_info = {'sample': sample,
+								'paired_files': sequencing_object,
+								'has_results': False
+								}
+	
+					sistr_results.append(sistr_info)
+					
+		else:
+			sistr_results_for_project.raise_for_status()
+	
+		return sistr_results
+		
+	def get_sistr_info_from_submission(self, submission):
+		sistr_info={}
+	
+		links=submission['links']
+		paired_path=self._get_rel_from_links('input/paired',links)
+		sistr_analysis_href=self._get_rel_from_links('analysis',links)
+		
+		unpaired_path=self._get_rel_from_links('input/unpaired',links)
+		unpaired_files=self.session.get(unpaired_path)
+		
+		if len(unpaired_files.json()['resource']['resources']) > 0:
+			self_href = self._get_rel_from_links('self', submission['links'])
+			raise Exception('Error: unpaired files were found for analysis submission ' + self_href + '. SISTR results from unpaired files not currently supported')
+		
+		paired=self.session.get(paired_path)
+		
+		if (paired.ok):
+			logging.debug(json2str(paired.json()))
+		
+			paired_json=paired.json()['resource']['resources']
+		
+			sistr_info['paired_files']=paired_json
+			sistr_info['sistr_predictions'] = self.get_sistr_predictions(sistr_analysis_href)
+			sistr_info['has_results'] = True
+			sistr_info['sample'] = self.get_sample_from_paired(paired_json)
+			sistr_info['submission'] = submission
+		else:
+			paired.raise_for_status()
+	
+		return sistr_info
+	
+	def get_sistr_submissions_for_user(self, path):
+		sistr_submissions_for_user=self.session.get('/api/analysisSubmissions/analysisType/sistr')
+		
+		sistr_analysis_list=[]
+		if (sistr_submissions_for_user.ok):
+			sistr_list=sistr_submissions_for_user.json()['resource']['resources']
+			for sistr in sistr_list:
+				if (sistr['analysisState'] == 'COMPLETED'):
+					logging.debug(json2str(sistr))
+	
+					sistr_analysis_list.append(self.get_sistr_info_from_submission(sistr))
+				else:
+					logging.debug('Skipping incompleted sistr submission [id='+sistr['identifier']+']')
+			else:
+				sistr_submissions_for_user.raise_for_status()
+		
+		return sistr_analysis_list
+	
+	def get_sistr_predictions_file(self, sistr_href):
+		return self.session.get(sistr_href, headers={'Accept': 'text/plain'})
 
 def sistr_results_to_excel(sistr_results, irida_url, excel_file):
 	workbook = xlsxwriter.Workbook(excel_file)
@@ -359,10 +360,10 @@ if __name__ == '__main__':
 	if arg_dict['password'] is None:
 		arg_dict['password']=getpass.getpass('Enter password:')
 	
-	session=get_oauth2_session(arg_dict['client_id'],arg_dict['client_secret'],arg_dict['username'],arg_dict['password'], arg_dict['irida_url'])
+	connector = IridaSistrResults(arg_dict['client_id'],arg_dict['client_secret'],arg_dict['username'],arg_dict['password'], arg_dict['irida_url'])
 	
 	#sistr_list=get_sistr_submissions_for_user(session,'/api/analysisSubmissions/analysisType/sistr')
-	sistr_list=get_sistr_results_from_projects(session)
+	sistr_list=connector.get_sistr_results_from_projects()
 	
 	if arg_dict['tabular']:
 		sistr_results_to_table(sistr_list,sys.stdout, arg_dict['irida_url'])
