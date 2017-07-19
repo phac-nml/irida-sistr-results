@@ -35,12 +35,17 @@ class IridaConnector:
 
 	def get(self,path):
 		response=self.session.get(path)
+		logging.debug("Getting path="+path)
 
 		if (response.ok):
 			self._log_json(response.json())
 			return response.json()['resource']
 		else:
 			response.raise_for_status()
+
+	def get_file(self, path):
+		logging.debug("Getting file from path="+path)
+		return self.session.get(path, headers={'Accept': 'text/plain'})
 
 	def _log_json(self,json_obj):
 		logging.debug(json.dumps(json_obj, sort_keys=True, separators=(',',':'), indent=4))
@@ -75,7 +80,7 @@ class IridaSistrResults:
 		analysis=self.irida_connector.get(sistr_analysis_href)
 	
 		sistr_href=self._get_rel_from_links('outputFile/sistr-predictions', analysis['links'])
-		sistr_pred=self.get_sistr_predictions_file(sistr_href)
+		sistr_pred=self.irida_connector.get_file(sistr_href)
 		sistr_pred_json=sistr_pred.json()
 	
 		if (sistr_pred_json is None):
@@ -170,9 +175,6 @@ class IridaSistrResults:
 				logging.debug('Skipping incompleted sistr submission [id='+sistr['identifier']+']')
 
 		return sistr_analysis_list
-	
-	def get_sistr_predictions_file(self, sistr_href):
-		return self.irida_connector.session.get(sistr_href, headers={'Accept': 'text/plain'})
 
 def sistr_results_to_excel(sistr_results, irida_url, excel_file):
 	workbook = xlsxwriter.Workbook(excel_file)
