@@ -79,7 +79,35 @@ class SistrExcelWriter(SistrResultsWriter):
 		self.worksheet = self.workbook.add_worksheet()
 		self.row=1
 
+	def _to_letter(self,col):
+		return chr(ord('A')+col)
+
+	def _to_range_col(self,start_col,end_col):
+		return self._to_letter(start_col)+'1:'+self._to_letter(end_col)+'1'
+
+	def _to_range_row(self,start_col,start_row,end_row):
+		return self._to_letter(start_col)+str(start_row)+':'+self._to_letter(start_col)+str(end_row)
+
+	def _set_formatting_ranges(self,header):
+		for i,v in enumerate(header):
+			if v == 'Serovar':
+				self.serovar_sc = i
+			elif v == 'Serovar cgMLST':
+				self.serovar_ec = i
+			elif v == 'QC Status':
+				self.qc_sc = i
+				self.qc_fc = i
+			elif v == 'QC Messages':
+				self.qc_ec = i
+			elif v == 'URL':
+				self.irida_sc = i
+			elif v == 'IRIDA File Pair Identifier':
+				self.irida_ec = i
+			
+
 	def _write_header(self, header):
+
+		self._set_formatting_ranges(header)
 
 		merged_header_format = self.workbook.add_format()
 		merged_header_format.set_bold()
@@ -88,9 +116,9 @@ class SistrExcelWriter(SistrResultsWriter):
 		header_format = self.workbook.add_format()
 		header_format.set_bold()
 
-		self.worksheet.merge_range('B1:D1', 'Serovar', merged_header_format)
-		self.worksheet.merge_range('E1:F1', 'QC', merged_header_format)
-		self.worksheet.merge_range('G1:I1', 'IRIDA', merged_header_format)
+		self.worksheet.merge_range(self._to_range_col(self.serovar_sc,self.serovar_ec), 'Serovar', merged_header_format)
+		self.worksheet.merge_range(self._to_range_col(self.qc_sc,self.qc_ec), 'QC', merged_header_format)
+		self.worksheet.merge_range(self._to_range_col(self.irida_sc,self.irida_ec), 'IRIDA', merged_header_format)
 
 		col = 0
 		for item in header:
@@ -115,19 +143,19 @@ class SistrExcelWriter(SistrResultsWriter):
 		self.row += 1
 
 	def _formatting(self):
-		logging.warning("Formatting row="+str(self.row))
 		format_pass = self.workbook.add_format({'bg_color': '#DFF0D8'})
 		format_warning = self.workbook.add_format({'bg_color': '#FCF8E3'})
 		format_fail = self.workbook.add_format({'bg_color': '#F2DEDE'})
-		self.worksheet.conditional_format('E1:E'+str(self.row), {'type': 'cell',
+		form_range=self._to_range_row(self.qc_fc,1,self.row)
+		self.worksheet.conditional_format(form_range, {'type': 'cell',
 									 'criteria': '==',
 									 'value': '"PASS"',
 									 'format': format_pass})
-		self.worksheet.conditional_format('E1:E'+str(self.row), {'type': 'cell',
+		self.worksheet.conditional_format(form_range, {'type': 'cell',
 									 'criteria': '==',
 									 'value': '"WARNING"',
 									 'format': format_warning})
-		self.worksheet.conditional_format('E1:E'+str(self.row), {'type': 'cell',
+		self.worksheet.conditional_format(form_range, {'type': 'cell',
 									 'criteria': '==',
 									 'value': '"FAIL"',
 									 'format': format_fail})
