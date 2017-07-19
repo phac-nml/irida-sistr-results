@@ -5,7 +5,7 @@ import getpass
 from irida_sistr_results.irida_connector import IridaConnector
 from irida_sistr_results.irida_api import IridaAPI
 from irida_sistr_results.irida_sistr_results import IridaSistrResults
-from irida_sistr_results.sistr_writer import SistrCsvWriter, sistr_results_to_excel
+from irida_sistr_results.sistr_writer import SistrCsvWriter, SistrExcelWriter
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Compile SISTR results from an IRIDA instance into a table.')
@@ -48,6 +48,9 @@ if __name__ == '__main__':
 	if arg_dict['tabular']:
 		writer=SistrCsvWriter(arg_dict['irida_url'],sys.stdout)
 		writer.write(sistr_list)
+		writer.close()
 
 	if arg_dict['excel_file'] is not None:
-		sistr_results_to_excel(sistr_list,arg_dict['irida_url'], arg_dict['excel_file'])
+		writer=SistrExcelWriter(arg_dict['irida_url'], arg_dict['excel_file'])
+		writer.write(sistr_list)
+		writer.close()
