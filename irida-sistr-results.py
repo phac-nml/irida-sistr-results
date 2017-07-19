@@ -43,6 +43,9 @@ class IridaConnector:
 		else:
 			response.raise_for_status()
 
+	def get_resources(self,path):
+		return self.get(path)['resources']
+
 	def get_file(self, path):
 		logging.debug("Getting file from path="+path)
 		return self.session.get(path, headers={'Accept': 'text/plain'})
@@ -104,9 +107,9 @@ class IridaSistrResults:
 	def get_sistr_results_from_projects(self):
 		sistr_list=[]
 	
-		projects=self.irida_connector.get('/api/projects')
+		projects=self.irida_connector.get_resources('/api/projects')
 	
-		for project in projects['resources']:
+		for project in projects:
 			sistr_list += self.get_sistr_results_for_project(project['identifier'])
 	
 		return sistr_list
@@ -114,12 +117,12 @@ class IridaSistrResults:
 	def get_sistr_results_for_project(self, project):
 		sistr_results=[]
 	
-		sistr_results_for_project=self.irida_connector.get('/api/projects/'+str(project)+'/samples')
+		sistr_results_for_project=self.irida_connector.get_resources('/api/projects/'+str(project)+'/samples')
 	
-		for sample in sistr_results_for_project['resources']:
-			sample_pairs=self.irida_connector.get('/api/samples/'+sample['identifier']+'/pairs')
+		for sample in sistr_results_for_project:
+			sample_pairs=self.irida_connector.get_resources('/api/samples/'+sample['identifier']+'/pairs')
 
-			for sequencing_object in sample_pairs['resources']:
+			for sequencing_object in sample_pairs:
 				sistr_info = None
 
 				if (self._has_rel_in_links('analysis/sistr', sequencing_object['links'])):
@@ -146,29 +149,27 @@ class IridaSistrResults:
 		sistr_analysis_href=self._get_rel_from_links('analysis',links)
 		
 		unpaired_path=self._get_rel_from_links('input/unpaired',links)
-		unpaired_files=self.irida_connector.get(unpaired_path)
+		unpaired_files=self.irida_connector.get_resources(unpaired_path)
 		
-		if len(unpaired_files['resources']) > 0:
+		if len(unpaired_files) > 0:
 			self_href = self._get_rel_from_links('self', submission['links'])
 			raise Exception('Error: unpaired files were found for analysis submission ' + self_href + '. SISTR results from unpaired files not currently supported')
 		
-		paired=self.irida_connector.get(paired_path)
-		paired_json=paired['resources']
+		paired=self.irida_connector.get_resources(paired_path)
 	
-		sistr_info['paired_files']=paired_json
+		sistr_info['paired_files']=paired
 		sistr_info['sistr_predictions'] = self.get_sistr_predictions(sistr_analysis_href)
 		sistr_info['has_results'] = True
-		sistr_info['sample'] = self.get_sample_from_paired(paired_json)
+		sistr_info['sample'] = self.get_sample_from_paired(paired)
 		sistr_info['submission'] = submission
 	
 		return sistr_info
 	
 	def get_sistr_submissions_for_user(self, path):
-		sistr_submissions_for_user=self.irida_connector.get('/api/analysisSubmissions/analysisType/sistr')
+		sistr_submissions_for_user=self.irida_connector.get_resources('/api/analysisSubmissions/analysisType/sistr')
 		
 		sistr_analysis_list=[]
-		sistr_list=sistr_submissions_for_user['resources']
-		for sistr in sistr_list:
+		for sistr in sistr_list_submissions_for_user:
 			if (sistr['analysisState'] == 'COMPLETED'):
 				sistr_analysis_list.append(self.get_sistr_info_from_submission(sistr))
 			else:
