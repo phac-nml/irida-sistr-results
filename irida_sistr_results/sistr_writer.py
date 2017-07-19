@@ -19,7 +19,9 @@ class SistrResultsWriter(object):
 	def _write_header(self,header):
 		return
 
-	@abc.abstractmethod
+	def _formatting(self):
+		return
+
 	def close(self):
 		return
 
@@ -55,6 +57,8 @@ class SistrResultsWriter(object):
 					result.get_paired_id()
 				])
 
+		self._formatting()
+
 class SistrCsvWriter(SistrResultsWriter):
 
 	def __init__(self, irida_url, out_file):
@@ -66,9 +70,6 @@ class SistrCsvWriter(SistrResultsWriter):
 
 	def _write_row(self,row):
 		self.writer.writerow(row)
-
-	def close(self):
-		return
 		
 class SistrExcelWriter(SistrResultsWriter):
 
@@ -112,6 +113,24 @@ class SistrExcelWriter(SistrResultsWriter):
 			col += 1
 
 		self.row += 1
+
+	def _formatting(self):
+		logging.warning("Formatting row="+str(self.row))
+		format_pass = self.workbook.add_format({'bg_color': '#DFF0D8'})
+		format_warning = self.workbook.add_format({'bg_color': '#FCF8E3'})
+		format_fail = self.workbook.add_format({'bg_color': '#F2DEDE'})
+		self.worksheet.conditional_format('E1:E'+str(self.row), {'type': 'cell',
+									 'criteria': '==',
+									 'value': '"PASS"',
+									 'format': format_pass})
+		self.worksheet.conditional_format('E1:E'+str(self.row), {'type': 'cell',
+									 'criteria': '==',
+									 'value': '"WARNING"',
+									 'format': format_warning})
+		self.worksheet.conditional_format('E1:E'+str(self.row), {'type': 'cell',
+									 'criteria': '==',
+									 'value': '"FAIL"',
+									 'format': format_fail})
 
 	def close(self):
 		self.workbook.close()
