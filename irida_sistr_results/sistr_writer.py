@@ -3,6 +3,8 @@ import xlsxwriter
 import abc
 import logging
 
+from sistr_info import SampleSistrInfo
+
 class SistrResultsWriter(object):
 
 	def __init__(self,irida_url):
@@ -38,35 +40,19 @@ class SistrResultsWriter(object):
 		self._write_header(header)
 		
 		for result in sistr_results.values():
-			sample = result['sample']
-	
-			if (not result['has_results']):
-				self._write_row([sample['sampleName']])
+			if (not result.has_sistr_results()):
+				self._write_row([result.get_sample_name()])
 			else:
-				paired=result['paired_files'][0]
-				sistr_predictions = result['sistr_predictions'][0]
-		
-				submission_identifier=result['submission']['identifier']
-				submission_url=self.irida_url
-				if submission_url.endswith('/'):
-					submission_url += 'analysis/'
-				else:
-					submission_url += '/analysis/'
-				submission_url += submission_identifier
-		
-				if (sistr_predictions['serovar_cgmlst'] is None):
-					sistr_predictions['serovar_cgmlst']='None'
-		
 				self._write_row([
-					sample['sampleName'],
-					sistr_predictions['serovar'],
-					sistr_predictions['serovar_antigen'],
-					sistr_predictions['serovar_cgmlst'],
-					sistr_predictions['qc_status'],
-					sistr_predictions['qc_messages'],
-					submission_url,
-					sample['identifier'],
-					paired['identifier']
+					result.get_sample_name(),
+					result.get_serovar(),
+					result.get_serovar_antigen(),
+					result.get_serovar_cgmlst(),
+					result.get_qc_status(),
+					result.get_qc_messages(),
+					result.get_submission_url(self.irida_url),
+					result.get_sample_id(),
+					result.get_paired_id()
 				])
 
 class SistrCsvWriter(SistrResultsWriter):

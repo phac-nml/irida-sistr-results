@@ -1,5 +1,7 @@
 import logging
 
+from sistr_info import SampleSistrInfo
+
 class IridaAPI(object):
 
 	def __init__(self,irida_connector):
@@ -78,10 +80,10 @@ class IridaAPI(object):
 					
 					sistr_info=self.get_sistr_info_from_submission(sistr)
 				else:
-					sistr_info = {'sample': sample,
+					sistr_info = SampleSistrInfo({'sample': sample,
 							'paired_files': sequencing_object,
 							'has_results': False
-							}
+							})
 
 				sistr_results.append(sistr_info)
 	
@@ -109,7 +111,7 @@ class IridaAPI(object):
 		sistr_info['sample'] = self.get_sample_from_paired(paired)
 		sistr_info['submission'] = submission
 	
-		return sistr_info
+		return SampleSistrInfo(sistr_info)
 	
 	def get_sistr_submissions_for_user(self):
 		sistr_submissions_for_user=self.irida_connector.get_resources('/api/analysisSubmissions/analysisType/sistr')
