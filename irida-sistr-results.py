@@ -53,8 +53,7 @@ class IridaConnector:
 	def _log_json(self,json_obj):
 		logging.debug(json.dumps(json_obj, sort_keys=True, separators=(',',':'), indent=4))
 
-
-class IridaSistrResults:
+class IridaAPI:
 
 	def __init__(self,irida_connector):
 		self.irida_connector=irida_connector
@@ -165,17 +164,42 @@ class IridaSistrResults:
 	
 		return sistr_info
 	
-	def get_sistr_submissions_for_user(self, path):
+	def get_sistr_submissions_for_user(self):
 		sistr_submissions_for_user=self.irida_connector.get_resources('/api/analysisSubmissions/analysisType/sistr')
 		
 		sistr_analysis_list=[]
-		for sistr in sistr_list_submissions_for_user:
+		for sistr in sistr_submissions_for_user:
 			if (sistr['analysisState'] == 'COMPLETED'):
 				sistr_analysis_list.append(self.get_sistr_info_from_submission(sistr))
 			else:
 				logging.debug('Skipping incompleted sistr submission [id='+sistr['identifier']+']')
 
 		return sistr_analysis_list
+
+class IridaSistrResults:
+
+	def __init__(self,irida_api):
+		self.irida_api=irida_api
+
+	def get_sistr_results(self,project):
+		sistr_results={}
+		project_results=self.irida_api.get_sistr_results_for_project(project)
+
+		for result in project_results:
+			sample_id=result['sample']['identifier']
+			sistr_results[sample_id]=result
+
+		user_results=self.irida_api.get_sistr_submissions_for_user()
+
+		for result in user_results:
+			sample_id=result['sample']['identifier']
+
+			if (sample_id in sistr_results and result['has_results']):
+				logging.warn("sample_name="+result['sample']['sampleName']+", sample_id="+sample_id+" already has SISTR results, will not update")
+			else:
+				sistr_results[sample_id]=result
+
+		return sistr_results
 
 def sistr_results_to_excel(sistr_results, irida_url, excel_file):
 	workbook = xlsxwriter.Workbook(excel_file)
@@ -218,7 +242,7 @@ def sistr_results_to_excel(sistr_results, irida_url, excel_file):
 		col += 1
 
 	row = 2
-	for result in sistr_results:
+	for result in sistr_results.values():
 		sample = result['sample']
 		paired=result['paired_files'][0]
 		sistr_predictions = result['sistr_predictions'][0]
@@ -284,7 +308,7 @@ def sistr_results_to_table(sistr_results, table_file, irida_url):
 		'URL'
 	])
 
-	for result in sistr_results:
+	for result in sistr_results.values():
 		sample = result['sample']
 
 		if (not result['has_results']):
@@ -346,10 +370,10 @@ if __name__ == '__main__':
 		arg_dict['password']=getpass.getpass('Enter password:')
 	
 	connector = IridaConnector(arg_dict['client_id'],arg_dict['client_secret'],arg_dict['username'],arg_dict['password'], arg_dict['irida_url'])
-	irida_results = IridaSistrResults(connector)
+	irida_api = IridaAPI(connector)
+	irida_results = IridaSistrResults(irida_api)
 	
-	#sistr_list=get_sistr_submissions_for_user(session,'/api/analysisSubmissions/analysisType/sistr')
-	sistr_list=irida_results.get_sistr_results_from_projects()
+	sistr_list=irida_results.get_sistr_results(1)
 	
 	if arg_dict['tabular']:
 		sistr_results_to_table(sistr_list,sys.stdout, arg_dict['irida_url'])
