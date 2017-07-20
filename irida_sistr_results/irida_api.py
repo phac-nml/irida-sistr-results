@@ -1,4 +1,5 @@
 import logging
+import json
 
 from sistr_info import SampleSistrInfo
 
@@ -25,6 +26,9 @@ class IridaAPI(object):
 				return True
 		return False
 
+	def _log_json(self,json_obj):
+		logging.debug(json.dumps(json_obj, sort_keys=True, separators=(',',':'), indent=4))
+
 	def get_sistr_predictions(self, sistr_analysis_href):
 		sistr_pred_json=None
 	
@@ -36,6 +40,8 @@ class IridaAPI(object):
 	
 		if (sistr_pred_json is None):
 			raise Exception("Could not get SISTR predictions for sistr " + sistr_analysis_href)
+
+		self._log_json(sistr_pred_json)
 	
 		return sistr_pred_json
 

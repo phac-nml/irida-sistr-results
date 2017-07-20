@@ -2,6 +2,7 @@ import csv
 import xlsxwriter
 import abc
 import logging
+from datetime import datetime
 
 from sistr_info import SampleSistrInfo
 
@@ -25,18 +26,28 @@ class SistrResultsWriter(object):
 	def close(self):
 		return
 
+	def _format_timestamp(self, timestamp):
+		return datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+
 	def write(self,sistr_results):
 		
 		header = [
 			'Sample Name',
-			'Serovar',
-			'Serovar Antigen',
-			'Serovar cgMLST',
+			'Created Date',
+			'Serovar (overall)',
+			'Serovar (antigen)',
+			'Serovar (cgMLST)',
+			'Serogroup',
+			'H1',
+			'H2',
+			'O-antigen',
 			'QC Status',
 			'QC Messages',
 			'URL',
 			'IRIDA Sample Identifer',
-			'IRIDA File Pair Identifier'
+			'IRIDA File Pair Identifier',
+			'IRIDA Submission Identifier',
+			'IRIDA Analysis Date'
 		]
 
 		self._write_header(header)
@@ -47,14 +58,21 @@ class SistrResultsWriter(object):
 			else:
 				self._write_row([
 					result.get_sample_name(),
+					self._format_timestamp(result.get_sample_created_date()),
 					result.get_serovar(),
 					result.get_serovar_antigen(),
 					result.get_serovar_cgmlst(),
+					result.get_serogroup(),
+					result.get_h1(),
+					result.get_h2(),
+					result.get_o_antigen(),
 					result.get_qc_status(),
 					result.get_qc_messages(),
 					result.get_submission_url(self.irida_url),
 					result.get_sample_id(),
-					result.get_paired_id()
+					result.get_paired_id(),
+					result.get_submission_identifier(),
+					self._format_timestamp(result.get_submission_created_date())
 				])
 
 		self._formatting()
@@ -90,9 +108,9 @@ class SistrExcelWriter(SistrResultsWriter):
 
 	def _set_formatting_ranges(self,header):
 		for i,v in enumerate(header):
-			if v == 'Serovar':
+			if v == 'Serovar (overall)':
 				self.serovar_sc = i
-			elif v == 'Serovar cgMLST':
+			elif v == 'O-antigen':
 				self.serovar_ec = i
 			elif v == 'QC Status':
 				self.qc_sc = i
@@ -101,7 +119,7 @@ class SistrExcelWriter(SistrResultsWriter):
 				self.qc_ec = i
 			elif v == 'URL':
 				self.irida_sc = i
-			elif v == 'IRIDA File Pair Identifier':
+			elif v == 'IRIDA Analysis Date':
 				self.irida_ec = i
 			
 

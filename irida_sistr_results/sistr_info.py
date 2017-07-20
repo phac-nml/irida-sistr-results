@@ -22,6 +22,18 @@ class SampleSistrInfo(object):
 		else:
 			return serovar_cgmlst
 
+	def get_serogroup(self):
+		return self.sistr_info['sistr_predictions'][0]['serogroup']
+
+	def get_h1(self):
+		return self.sistr_info['sistr_predictions'][0]['h1']
+
+	def get_h2(self):
+		return self.sistr_info['sistr_predictions'][0]['h2']
+
+	def get_o_antigen(self):
+		return self.sistr_info['sistr_predictions'][0]['o_antigen']
+
 	def get_qc_status(self):
 		return self.sistr_info['sistr_predictions'][0]['qc_status']
 
@@ -29,15 +41,23 @@ class SampleSistrInfo(object):
 		return self.sistr_info['sistr_predictions'][0]['qc_messages']
 
 	def get_submission_url(self, irida_base_url):
-		submission_identifier=self.sistr_info['submission']['identifier']
 		submission_url=irida_base_url
 		if submission_url.endswith('/'):
 			submission_url += 'analysis/'
 		else:
 			submission_url += '/analysis/'
-		submission_url += submission_identifier
+		submission_url += self.get_submission_identifier()
 
 		return submission_url
+
+	def get_submission_identifier(self):
+		return self.sistr_info['submission']['identifier']
+
+	def get_submission_created_date(self):
+		return self.sistr_info['submission']['createdDate']/1000
+
+	def get_sample_created_date(self):
+		return self.sistr_info['sample']['createdDate']/1000
 
 	def get_sample_id(self):
 		return self.sistr_info['sample']['identifier']
