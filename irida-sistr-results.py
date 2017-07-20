@@ -35,14 +35,14 @@ if __name__ == '__main__':
 	if (arg_dict['verbose']):
 		logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s:%(message)s')
 	else:
-		logging.basicConfig(format='%(asctime)s %(levelname)s:%(message)s')
+		logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s:%(message)s')
 	
 	if arg_dict['password'] is None:
 		arg_dict['password']=getpass.getpass('Enter password:')
 	
 	connector = IridaConnector(arg_dict['client_id'],arg_dict['client_secret'],arg_dict['username'],arg_dict['password'], arg_dict['irida_url'])
 	irida_api = IridaAPI(connector)
-	irida_results = IridaSistrResults(irida_api)
+	irida_results = IridaSistrResults(irida_api,True,True)
 	
 	sistr_list=irida_results.get_sistr_results(arg_dict['projects'][0])
 	
