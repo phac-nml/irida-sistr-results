@@ -43,6 +43,15 @@ class SistrResultsWriter(object):
 			'O-antigen',
 			'QC Status',
 			'QC Messages',
+			'cgMLST Subspecies',
+			'cgMLST Matching Genome',
+			'Alleles Matching Genome',
+			'cgMLST Percent Matching',
+			'cgMLST Sequence Type',
+			'Mash Subspecies',
+			'Mash Serovar',
+			'Mash Matching Genome Name',
+			'Mash Distance',
 			'URL',
 			'IRIDA Sample Identifer',
 			'IRIDA File Pair Identifier',
@@ -68,6 +77,15 @@ class SistrResultsWriter(object):
 					result.get_o_antigen(),
 					result.get_qc_status(),
 					result.get_qc_messages(),
+					result.get_cgmlst_subspecies(),
+					result.get_cgmlst_genome(),
+					result.get_cgmlst_matching_total_alleles(),
+					str(result.get_cgmlst_matching_proportion()*100)+'%',
+					result.get_cgmlst_sequence_type(),
+					result.get_mash_subspecies(),
+					result.get_mash_serovar(),
+					result.get_mash_genome(),
+					result.get_mash_distance(),
 					result.get_submission_url(self.irida_url),
 					result.get_sample_id(),
 					result.get_paired_id(),
@@ -112,6 +130,14 @@ class SistrExcelWriter(SistrResultsWriter):
 				self.serovar_sc = i
 			elif v == 'O-antigen':
 				self.serovar_ec = i
+			elif v == 'cgMLST Subspecies':
+				self.cgmlst_sc = i
+			elif v == 'cgMLST Sequence Type':
+				self.cgmlst_ec = i
+			elif v == 'Mash Subspecies':
+				self.mash_sc = i
+			elif v == 'Mash Distance':
+				self.mash_ec = i
 			elif v == 'QC Status':
 				self.qc_sc = i
 				self.qc_fc = i
@@ -136,6 +162,8 @@ class SistrExcelWriter(SistrResultsWriter):
 
 		self.worksheet.merge_range(self._to_range_col(self.serovar_sc,self.serovar_ec), 'Serovar', merged_header_format)
 		self.worksheet.merge_range(self._to_range_col(self.qc_sc,self.qc_ec), 'QC', merged_header_format)
+		self.worksheet.merge_range(self._to_range_col(self.cgmlst_sc,self.cgmlst_ec), 'cgMLST', merged_header_format)
+		self.worksheet.merge_range(self._to_range_col(self.mash_sc,self.mash_ec), 'Mash', merged_header_format)
 		self.worksheet.merge_range(self._to_range_col(self.irida_sc,self.irida_ec), 'IRIDA', merged_header_format)
 
 		col = 0
