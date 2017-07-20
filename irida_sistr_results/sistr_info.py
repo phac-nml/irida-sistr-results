@@ -39,7 +39,11 @@ class SampleSistrInfo(object):
 		return self._get_sistr()['o_antigen']
 
 	def get_qc_status(self):
-		return self._get_sistr()['qc_status']
+		return 'MISSING' if (not self.has_sistr_results()) else self._get_sistr()['qc_status']
+
+	def get_qc_status_numerical(self):
+		"""Gets numerical value for QC status, used for sorting"""
+		return ['MISSING','FAIL','WARNING','PASS'].index(self.get_qc_status())
 
 	def get_qc_messages(self):
 		return self._get_sistr()['qc_messages']

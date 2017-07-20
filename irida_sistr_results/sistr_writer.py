@@ -3,6 +3,7 @@ import xlsxwriter
 import abc
 import logging
 from datetime import datetime
+from operator import methodcaller
 
 from sistr_info import SampleSistrInfo
 
@@ -99,10 +100,12 @@ class SistrResultsWriter(object):
 	def write(self,sistr_results):
 		
 		self._write_header(self._get_header_list())
-		
-		for result in sistr_results.values():
+
+		sistr_results_sorted = sorted(sistr_results.values(), key=methodcaller('get_sample_created_date'))
+		sistr_results_sorted = sorted(sistr_results_sorted, key=methodcaller('get_qc_status_numerical'), reverse=True)
+		for result in sistr_results_sorted:
 			if (not result.has_sistr_results()):
-				self._write_row([result.get_sample_name(),'MISSING'])
+				self._write_row([result.get_sample_name(),result.get_qc_status()])
 			else:
 				self._write_row(self._get_row_list(result))
 
