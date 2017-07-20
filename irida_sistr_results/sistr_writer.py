@@ -14,6 +14,8 @@ class SistrResultsWriter(object):
 
 		self.header_list = [
 			'Sample Name',
+			'QC Status',
+			'QC Messages',
 			'Created Date',
 			'Serovar (overall)',
 			'Serovar (antigen)',
@@ -22,8 +24,6 @@ class SistrResultsWriter(object):
 			'H1',
 			'H2',
 			'O-antigen',
-			'QC Status',
-			'QC Messages',
 			'cgMLST Subspecies',
 			'cgMLST Matching Genome',
 			'Alleles Matching Genome',
@@ -73,10 +73,12 @@ class SistrResultsWriter(object):
 		
 		for result in sistr_results.values():
 			if (not result.has_sistr_results()):
-				self._write_row([result.get_sample_name()])
+				self._write_row([result.get_sample_name(),'MISSING'])
 			else:
 				self._write_row([
 					result.get_sample_name(),
+					result.get_qc_status(),
+					result.get_qc_messages(),
 					self._format_timestamp(result.get_sample_created_date()),
 					result.get_serovar(),
 					result.get_serovar_antigen(),
@@ -85,8 +87,6 @@ class SistrResultsWriter(object):
 					result.get_h1(),
 					result.get_h2(),
 					result.get_o_antigen(),
-					result.get_qc_status(),
-					result.get_qc_messages(),
 					result.get_cgmlst_subspecies(),
 					result.get_cgmlst_genome(),
 					result.get_cgmlst_matching_total_alleles(),
@@ -177,8 +177,8 @@ class SistrExcelWriter(SistrResultsWriter):
 
 		header_format = self.workbook.add_format()
 		header_format.set_bold()
-		self.worksheet.merge_range(self._range_title('Serovar (overall)', 'O-antigen'), 'Serovar', merged_header_format)
 		self.worksheet.merge_range(self._range_title('QC Status', 'QC Messages'), 'QC', merged_header_format)
+		self.worksheet.merge_range(self._range_title('Serovar (overall)', 'O-antigen'), 'Serovar', merged_header_format)
 		self.worksheet.merge_range(self._range_title('cgMLST Subspecies', 'cgMLST Sequence Type'), 'cgMLST', merged_header_format)
 		self.worksheet.merge_range(self._range_title('Mash Subspecies', 'Mash Distance'), 'Mash', merged_header_format)
 		self.worksheet.merge_range(self._range_title('URL', 'IRIDA Analysis Date'), 'IRIDA', merged_header_format)
@@ -210,6 +210,7 @@ class SistrExcelWriter(SistrResultsWriter):
 		format_pass = self.workbook.add_format({'bg_color': '#DFF0D8'})
 		format_warning = self.workbook.add_format({'bg_color': '#FCF8E3'})
 		format_fail = self.workbook.add_format({'bg_color': '#F2DEDE'})
+		format_missing = self.workbook.add_format({'bg_color': '#BBBBBB'})
 		form_range=self._to_range_row('QC Status',1,self.row)
 		self.worksheet.conditional_format(form_range, {'type': 'cell',
 									 'criteria': '==',
@@ -223,7 +224,11 @@ class SistrExcelWriter(SistrResultsWriter):
 									 'criteria': '==',
 									 'value': '"FAIL"',
 									 'format': format_fail})
-		self.worksheet.freeze_panes(2,1)
+		self.worksheet.conditional_format(form_range, {'type': 'cell',
+									 'criteria': '==',
+									 'value': '"MISSING"',
+									 'format': format_missing})
+		self.worksheet.freeze_panes(2,2)
 
 	def close(self):
 		self.workbook.close()
