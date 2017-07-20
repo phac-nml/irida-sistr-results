@@ -188,12 +188,13 @@ class SistrExcelWriter(SistrResultsWriter):
 			self.worksheet.write(self.row,col,item, header_format)
 			col += 1
 
-		self.worksheet.set_column('A:A', 30)
-		self.worksheet.set_column('B:B', 20)
-		self.worksheet.set_column('C:C', 40)
-		self.worksheet.set_column('D:E', 20)
-		self.worksheet.set_column('F:G', 40)
-		self.worksheet.set_column('H:I', 25)
+		self.worksheet.set_column(self._range_title('Sample Name', 'Serogroup'), 20)
+		self.worksheet.set_column(self._range_stitle('H1'), 10)
+		self.worksheet.set_column(self._range_stitle('H2'), 10)
+		self.worksheet.set_column(self._range_title('O-antigen', 'cgMLST Subspecies'), 20)
+		self.worksheet.set_column(self._range_title('cgMLST Matching Genome', 'cgMLST Sequence Type'), 25)
+		self.worksheet.set_column(self._range_title('Mash Subspecies', 'Mash Serovar'), 20)
+		self.worksheet.set_column(self._range_title('Mash Matching Genome Name', 'IRIDA Analysis Date'), 30)
 
 		self.row += 1
 
@@ -222,6 +223,7 @@ class SistrExcelWriter(SistrResultsWriter):
 									 'criteria': '==',
 									 'value': '"FAIL"',
 									 'format': format_fail})
+		self.worksheet.freeze_panes(2,1)
 
 	def close(self):
 		self.workbook.close()
