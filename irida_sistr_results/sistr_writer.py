@@ -12,26 +12,7 @@ class SistrResultsWriter(object):
 		__metaclass__ = abc.ABCMeta
 		self.irida_url=irida_url
 
-	@abc.abstractmethod
-	def _write_row(self,row):
-		return
-
-	@abc.abstractmethod
-	def _write_header(self,header):
-		return
-
-	def _formatting(self):
-		return
-
-	def close(self):
-		return
-
-	def _format_timestamp(self, timestamp):
-		return datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
-
-	def write(self,sistr_results):
-		
-		header = [
+		self.header_list = [
 			'Sample Name',
 			'Created Date',
 			'Serovar (overall)',
@@ -59,7 +40,36 @@ class SistrResultsWriter(object):
 			'IRIDA Analysis Date'
 		]
 
-		self._write_header(header)
+
+	@abc.abstractmethod
+	def _write_row(self,row):
+		return
+
+	@abc.abstractmethod
+	def _write_header(self,header):
+		return
+
+	def _formatting(self):
+		return
+
+	def close(self):
+		return
+
+	def _format_timestamp(self, timestamp):
+		return datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+
+	def _get_header_index(self,title):
+		"""Gets the particular index from the headers given the title.
+
+		title: The title of the header column.
+
+		returns: The index into the header list.
+		"""
+		return self.header_list.index(title)
+
+	def write(self,sistr_results):
+		
+		self._write_header(self.header_list)
 		
 		for result in sistr_results.values():
 			if (not result.has_sistr_results()):
@@ -115,56 +125,63 @@ class SistrExcelWriter(SistrResultsWriter):
 		self.worksheet = self.workbook.add_worksheet()
 		self.row=1
 
+	def _get_header_column_number(self,title):
+		"""Gets the particular column number from the headers given the title.
+
+		title: The title of the header column.
+
+		returns: The column number (starting with 1) from the header list.
+		"""
+		return self._get_header_index(title)+1
+
+	def _get_header_column_letter(self,title):
+		"""Gets the particular column letter from the headers given the title.
+
+		title: The title of the header column.
+
+		returns: The column letter (starting with A) from the header list.
+		"""
+		return self._to_letter(self._get_header_index(title))
+
+	def _range_stitle(self,title):
+		"""Gets the particular column letter range from the headers given a single title.
+
+		title: The title of the header column.
+
+		returns: The column range (e.g., A:A) from the header list.
+		"""
+		return self._range_title(title,title)
+
+	def _range_title(self,start_title,end_title):
+		scol=self._get_header_index(start_title)
+		ecol=self._get_header_index(end_title)
+		return self._to_range_col_1(scol,ecol)
+
 	def _to_letter(self,col):
 		return chr(ord('A')+col)
 
 	def _to_range_col(self,start_col,end_col):
+		return self._to_letter(start_col)+':'+self._to_letter(end_col)
+
+	def _to_range_col_1(self,start_col,end_col):
 		return self._to_letter(start_col)+'1:'+self._to_letter(end_col)+'1'
 
-	def _to_range_row(self,start_col,start_row,end_row):
-		return self._to_letter(start_col)+str(start_row)+':'+self._to_letter(start_col)+str(end_row)
-
-	def _set_formatting_ranges(self,header):
-		for i,v in enumerate(header):
-			if v == 'Serovar (overall)':
-				self.serovar_sc = i
-			elif v == 'O-antigen':
-				self.serovar_ec = i
-			elif v == 'cgMLST Subspecies':
-				self.cgmlst_sc = i
-			elif v == 'cgMLST Sequence Type':
-				self.cgmlst_ec = i
-			elif v == 'Mash Subspecies':
-				self.mash_sc = i
-			elif v == 'Mash Distance':
-				self.mash_ec = i
-			elif v == 'QC Status':
-				self.qc_sc = i
-				self.qc_fc = i
-			elif v == 'QC Messages':
-				self.qc_ec = i
-			elif v == 'URL':
-				self.irida_sc = i
-			elif v == 'IRIDA Analysis Date':
-				self.irida_ec = i
-			
+	def _to_range_row(self,start_title,start_row,end_row):
+		start_col=self._get_header_column_letter(start_title)
+		return start_col+str(start_row)+':'+start_col+str(end_row)
 
 	def _write_header(self, header):
-
-		self._set_formatting_ranges(header)
-
 		merged_header_format = self.workbook.add_format()
 		merged_header_format.set_bold()
 		merged_header_format.set_align('center')
 
 		header_format = self.workbook.add_format()
 		header_format.set_bold()
-
-		self.worksheet.merge_range(self._to_range_col(self.serovar_sc,self.serovar_ec), 'Serovar', merged_header_format)
-		self.worksheet.merge_range(self._to_range_col(self.qc_sc,self.qc_ec), 'QC', merged_header_format)
-		self.worksheet.merge_range(self._to_range_col(self.cgmlst_sc,self.cgmlst_ec), 'cgMLST', merged_header_format)
-		self.worksheet.merge_range(self._to_range_col(self.mash_sc,self.mash_ec), 'Mash', merged_header_format)
-		self.worksheet.merge_range(self._to_range_col(self.irida_sc,self.irida_ec), 'IRIDA', merged_header_format)
+		self.worksheet.merge_range(self._range_title('Serovar (overall)', 'O-antigen'), 'Serovar', merged_header_format)
+		self.worksheet.merge_range(self._range_title('QC Status', 'QC Messages'), 'QC', merged_header_format)
+		self.worksheet.merge_range(self._range_title('cgMLST Subspecies', 'cgMLST Sequence Type'), 'cgMLST', merged_header_format)
+		self.worksheet.merge_range(self._range_title('Mash Subspecies', 'Mash Distance'), 'Mash', merged_header_format)
+		self.worksheet.merge_range(self._range_title('URL', 'IRIDA Analysis Date'), 'IRIDA', merged_header_format)
 
 		col = 0
 		for item in header:
@@ -192,7 +209,7 @@ class SistrExcelWriter(SistrResultsWriter):
 		format_pass = self.workbook.add_format({'bg_color': '#DFF0D8'})
 		format_warning = self.workbook.add_format({'bg_color': '#FCF8E3'})
 		format_fail = self.workbook.add_format({'bg_color': '#F2DEDE'})
-		form_range=self._to_range_row(self.qc_fc,1,self.row)
+		form_range=self._to_range_row('QC Status',1,self.row)
 		self.worksheet.conditional_format(form_range, {'type': 'cell',
 									 'criteria': '==',
 									 'value': '"PASS"',
