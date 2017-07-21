@@ -29,10 +29,9 @@ class SistrResultsWriter(object):
 
 	def _get_header_list(self):
 		return [
+			'Project',
 			'Sample Name',
 			'QC Status',
-			'QC Messages',
-			'Created Date',
 			'Serovar (overall)',
 			'Serovar (antigen)',
 			'Serovar (cgMLST)',
@@ -49,7 +48,9 @@ class SistrResultsWriter(object):
 			'Mash Serovar',
 			'Mash Matching Genome Name',
 			'Mash Distance',
-			'URL',
+			'QC Messages',
+			'IRIDA URL',
+			'Sample Created Date',
 			'IRIDA Sample Identifer',
 			'IRIDA File Pair Identifier',
 			'IRIDA Submission Identifier',
@@ -68,12 +69,11 @@ class SistrResultsWriter(object):
 		"""
 		return self._get_header_list().index(title)
 
-	def _get_row_list(self,result):
+	def _get_row_list(self,project,result):
 		return [
+			project,
 			result.get_sample_name(),
 			result.get_qc_status(),
-			result.get_qc_messages(),
-			self._format_timestamp(result.get_sample_created_date()),
 			result.get_serovar(),
 			result.get_serovar_antigen(),
 			result.get_serovar_cgmlst(),
@@ -90,7 +90,9 @@ class SistrResultsWriter(object):
 			result.get_mash_serovar(),
 			result.get_mash_genome(),
 			result.get_mash_distance(),
+			result.get_qc_messages(),
 			result.get_submission_url(self.irida_url),
+			self._format_timestamp(result.get_sample_created_date()),
 			result.get_sample_id(),
 			result.get_paired_id(),
 			result.get_submission_identifier(),
@@ -108,9 +110,9 @@ class SistrResultsWriter(object):
 			sistr_results_sorted = sorted(sistr_results_sorted, key=methodcaller('get_qc_status_numerical'), reverse=True)
 			for result in sistr_results_sorted:
 				if (not result.has_sistr_results()):
-					self._write_row([result.get_sample_name(),result.get_qc_status()])
+					self._write_row([project,result.get_sample_name(),result.get_qc_status()])
 				else:
-					self._write_row(self._get_row_list(result))
+					self._write_row(self._get_row_list(project,result))
 	
 			self._formatting()
 
@@ -128,6 +130,7 @@ class SistrCsvWriterShort(SistrResultsWriter):
 
 	def _get_header_list(self):
 		return [
+			'Project',
 			'Sample Name',
 			'QC Status',
 			'Created Date',
@@ -139,8 +142,9 @@ class SistrCsvWriterShort(SistrResultsWriter):
 			'IRIDA Analysis URL'
 		]
 
-	def _get_row_list(self,result):
+	def _get_row_list(self,project,result):
 		return [
+			project,
 			result.get_sample_name(),
 			result.get_qc_status(),
 			self._format_timestamp(result.get_sample_created_date()),
@@ -224,17 +228,17 @@ class SistrExcelWriter(SistrResultsWriter):
 
 		header_format = self.workbook.add_format()
 		header_format.set_bold()
-		self.worksheet.merge_range(self._range_title('QC Status', 'QC Messages'), 'QC', merged_header_format)
 		self.worksheet.merge_range(self._range_title('Serovar (overall)', 'O-antigen'), 'Serovar', merged_header_format)
 		self.worksheet.merge_range(self._range_title('cgMLST Subspecies', 'cgMLST Sequence Type'), 'cgMLST', merged_header_format)
 		self.worksheet.merge_range(self._range_title('Mash Subspecies', 'Mash Distance'), 'Mash', merged_header_format)
-		self.worksheet.merge_range(self._range_title('URL', 'IRIDA Analysis Date'), 'IRIDA', merged_header_format)
+		self.worksheet.merge_range(self._range_title('IRIDA URL', 'IRIDA Analysis Date'), 'IRIDA', merged_header_format)
 
 		col = 0
 		for item in header:
 			self.worksheet.write(self.row,col,item, header_format)
 			col += 1
 
+		self.worksheet.set_column(self._range_stitle('Project'), 15)
 		self.worksheet.set_column(self._range_title('Sample Name', 'Serogroup'), 20)
 		self.worksheet.set_column(self._range_stitle('H1'), 10)
 		self.worksheet.set_column(self._range_stitle('H2'), 10)
@@ -275,7 +279,7 @@ class SistrExcelWriter(SistrResultsWriter):
 									 'criteria': '==',
 									 'value': '"MISSING"',
 									 'format': format_missing})
-		self.worksheet.freeze_panes(2,2)
+		self.worksheet.freeze_panes(2,3)
 
 	def close(self):
 		self.workbook.close()
