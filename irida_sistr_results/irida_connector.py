@@ -34,6 +34,7 @@ class IridaConnector(object):
 		self.session=oauth_service.get_session(token)
 
 	def get(self,path):
+		path=self._join_path(path)
 		logging.debug("Getting path="+path)
 		response=self.session.get(path)
 
@@ -56,12 +57,9 @@ class IridaConnector(object):
 				return self._base_path + '/' + path
 
 	def get_resources(self,path):
-		path=self._join_path(path)
 		return self.get(path)['resources']
 
 	def get_file(self, path):
-		path=self._join_path(path)
-		logging.debug("Getting file from path="+path)
 		return self.session.get(path, headers={'Accept': 'text/plain'})
 
 	def _log_json(self,json_obj):

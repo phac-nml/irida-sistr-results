@@ -10,7 +10,19 @@ class IridaSistrResults(object):
 		self.sistr_results={}
 		self.sample_project={}
 
-	def get_sistr_results(self,projects):
+	def get_sistr_results_all_projects(self):
+		projects = self.irida_api.get_user_projects()
+		return self._get_sistr_results(projects)
+
+	def get_sistr_results_from_projects(self, project_ids):
+		projects=[]
+		for p in project_ids:
+			project = self.irida_api.get_user_project(p)
+			projects.append(project)
+
+		return self._get_sistr_results(projects)
+
+	def _get_sistr_results(self,projects):
 		for p in projects:
 			logging.debug("Working on project " + str(p))
 			self._load_sistr_results_for_project(p)
@@ -41,19 +53,21 @@ class IridaSistrResults(object):
 							logging.info(self._result_to_sample_log_string(sistr_results_project[sample_id], result, "newer")+" Not updating.")
 
 	def _load_sistr_results_for_project(self,project):
-		if (project in self.sistr_results):
-			raise Exception("Error: project " + str(project) + " already examined")
+		project_id=project['identifier']
+
+		if (project_id in self.sistr_results):
+			raise Exception("Error: project " + str(project_id) + " already examined")
 		
-		self.sistr_results[project]={}
-		project_results=self.irida_api.get_sistr_results_for_project(project)
+		self.sistr_results[project_id]={}
+		project_results=self.irida_api.get_sistr_results_for_project(project_id)
 
 		for result in project_results:
 			sample_id=result.get_sample_id()
-			self.sistr_results[project][sample_id]=result
+			self.sistr_results[project_id][sample_id]=result
 			if (sample_id in self.sample_project):
-				self.sample_project[sample_id].append(project)
+				self.sample_project[sample_id].append(project_id)
 			else:	
-				self.sample_project[sample_id]=[project]
+				self.sample_project[sample_id]=[project_id]
 
 	def _timef(self,timestamp):
 		return datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')

@@ -46,7 +46,10 @@ if __name__ == '__main__':
 	irida_api = IridaAPI(connector)
 	irida_results = IridaSistrResults(irida_api,not arg_dict['exclude_user_results'],not arg_dict['exclude_user_existing_results'])
 	
-	sistr_list=irida_results.get_sistr_results(arg_dict['projects'])
+	if arg_dict['projects'] is None:
+		sistr_list = irida_results.get_sistr_results_all_projects()
+	else:
+		sistr_list = irida_results.get_sistr_results_from_projects(arg_dict['projects'])
 	
 	if arg_dict['tabular']:
 		writer=SistrCsvWriterShort(arg_dict['irida_url'],sys.stdout)

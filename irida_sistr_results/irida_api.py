@@ -57,16 +57,11 @@ class IridaAPI(object):
 		else:
 			return sample
 	
-	
-	def get_sistr_results_from_projects(self):
-		sistr_list=[]
-	
-		projects=self.irida_connector.get_resources('/api/projects')
-	
-		for project in projects:
-			sistr_list += self.get_sistr_results_for_project(project['identifier'])
-	
-		return sistr_list
+	def get_user_project(self,project_id):
+		return self.irida_connector.get('/api/projects/'+str(project_id))
+
+	def get_user_projects(self):
+		return self.irida_connector.get_resources('/api/projects')
 	
 	def get_sistr_results_for_project(self, project):
 		sistr_results=[]
