@@ -103,7 +103,7 @@ class SistrResultsWriter(object):
 		
 		self._write_header(self._get_header_list())
 
-		for project in sistr_results.keys():
+		for project in sorted(sistr_results.keys(), key=int):
 			sistr_results_project = sistr_results[project]
 
 			sistr_results_sorted = sorted(sistr_results_project.values(), key=methodcaller('get_sample_created_date'))
