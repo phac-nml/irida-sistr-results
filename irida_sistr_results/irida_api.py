@@ -76,23 +76,27 @@ class IridaAPI(object):
 		for sample in sistr_results_for_project:
 			sample_pairs=self.irida_connector.get_resources('/api/samples/'+sample['identifier']+'/pairs')
 
-			for sequencing_object in sample_pairs:
-				sistr_info = None
-
-				if (self._has_rel_in_links('analysis/sistr', sequencing_object['links'])):
-					sistr_rel=self._get_rel_from_links('analysis/sistr', sequencing_object['links'])
-
-					sistr=self.irida_connector.get(sistr_rel)
-					
-					sistr_info=self.get_sistr_info_from_submission(sistr)
-				else:
-					sistr_info = SampleSistrInfo({'sample': sample,
-							'paired_files': sequencing_object,
-							'has_results': False
-							})
-
-				sistr_results.append(sistr_info)
+			if len(sample_pairs) == 0:
+				sistr_info = SampleSistrInfo({'sample': sample,
+						'has_results': False
+						})
+			else:
+				for sequencing_object in sample_pairs:
+					sistr_info = None
 	
+					if (self._has_rel_in_links('analysis/sistr', sequencing_object['links'])):
+						sistr_rel=self._get_rel_from_links('analysis/sistr', sequencing_object['links'])
+	
+						sistr=self.irida_connector.get(sistr_rel)
+						
+						sistr_info=self.get_sistr_info_from_submission(sistr)
+					else:
+						sistr_info = SampleSistrInfo({'sample': sample,
+								'paired_files': sequencing_object,
+								'has_results': False
+								})
+
+			sistr_results.append(sistr_info)
 		return sistr_results
 		
 	def get_sistr_info_from_submission(self, submission):
