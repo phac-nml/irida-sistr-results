@@ -22,7 +22,7 @@ class SampleSistrInfo(object):
 	def get_serovar_cgmlst(self):
 		serovar_cgmlst=self._get_sistr()['serovar_cgmlst']
 		if (serovar_cgmlst is None):
-			return 'None'
+			return ''
 		else:
 			return serovar_cgmlst
 
