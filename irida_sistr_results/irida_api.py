@@ -81,16 +81,21 @@ class IridaAPI(object):
 						'has_results': False
 						})
 			else:
+				sistr_info = None
 				for sequencing_object in sample_pairs:
-					sistr_info = None
-	
 					if (self._has_rel_in_links('analysis/sistr', sequencing_object['links'])):
 						sistr_rel=self._get_rel_from_links('analysis/sistr', sequencing_object['links'])
 	
 						sistr=self.irida_connector.get(sistr_rel)
 						
-						sistr_info=self.get_sistr_info_from_submission(sistr)
-					else:
+						sistr_info_curr=self.get_sistr_info_from_submission(sistr)
+						if (sistr_info is None):
+							sistr_info = sistr_info_curr
+						elif sistr_info_curr.get_qc_status() == 'PASS' and (not sistr_info.has_sistr_results() or sistr_info.get_qc_status() != 'PASS'):
+							sistr_info = sistr_info_curr
+						elif sistr_info_curr.get_qc_status() == 'PASS' and (sistr_info_curr.get_submission_created_date() > sistr_info.get_submission_created_date()):
+							sistr_info = sistr_info_curr
+					elif sistr_info is None:
 						sistr_info = SampleSistrInfo({'sample': sample,
 								'paired_files': sequencing_object,
 								'has_results': False
