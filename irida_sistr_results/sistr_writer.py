@@ -12,6 +12,7 @@ class SistrResultsWriter(object):
 	def __init__(self,irida_url):
 		__metaclass__ = abc.ABCMeta
 		self.irida_url=irida_url
+		self.row=0
 
 	@abc.abstractmethod
 	def _write_row(self,row):
@@ -24,12 +25,22 @@ class SistrResultsWriter(object):
 	def _formatting(self):
 		return
 
+	def _group_formatting(self,start_row,end_row):
+		"""Applies formatting to a group of rows"""
+		return
+
 	def close(self):
 		return
 
+	def get_row(self):
+		return self.row
+
+	def set_row(self,row):
+		self.row=row
+
 	def _get_header_list(self):
 		return [
-			'Project',
+			'Project ID',
 			'Sample Name',
 			'QC Status',
 			'Serovar (overall)',
@@ -101,9 +112,13 @@ class SistrResultsWriter(object):
 
 	def write(self,sistr_results):
 		
+		self.set_row(0)
 		self._write_header(self._get_header_list())
+		self.set_row(1)
 
 		for project in sorted(sistr_results.keys(), key=int):
+			row_start_project=self.get_row()
+
 			sistr_results_project = sistr_results[project]
 
 			sistr_results_sorted = sorted(sistr_results_project.values(), key=methodcaller('get_sample_created_date'))
@@ -113,8 +128,11 @@ class SistrResultsWriter(object):
 					self._write_row([project,result.get_sample_name(),result.get_qc_status()])
 				else:
 					self._write_row(self._get_row_list(project,result))
+				self.set_row(self.get_row()+1)
+
+			self._group_formatting(row_start_project,self.get_row())
 	
-			self._formatting()
+		self._formatting()
 
 class SistrCsvWriterShort(SistrResultsWriter):
 
@@ -130,7 +148,7 @@ class SistrCsvWriterShort(SistrResultsWriter):
 
 	def _get_header_list(self):
 		return [
-			'Project',
+			'Project ID',
 			'Sample Name',
 			'QC Status',
 			'Created Date',
@@ -174,7 +192,6 @@ class SistrExcelWriter(SistrResultsWriter):
 		super(SistrExcelWriter, self).__init__(irida_url)
 		self.workbook = xlsxwriter.Workbook(out_file)
 		self.worksheet = self.workbook.add_worksheet()
-		self.row=1
 
 	def _get_header_column_number(self,title):
 		"""Gets the particular column number from the headers given the title.
@@ -221,6 +238,9 @@ class SistrExcelWriter(SistrResultsWriter):
 		start_col=self._get_header_column_letter(start_title)
 		return start_col+str(start_row)+':'+start_col+str(end_row)
 
+	def _to_range(self,start_row,end_row,start_col,end_col):
+		return self._to_letter(start_col)+str(start_row)+':'+self._to_letter(end_col)+str(end_row)
+
 	def _write_header(self, header):
 		merged_header_format = self.workbook.add_format()
 		merged_header_format.set_bold()
@@ -228,17 +248,13 @@ class SistrExcelWriter(SistrResultsWriter):
 
 		header_format = self.workbook.add_format()
 		header_format.set_bold()
-		self.worksheet.merge_range(self._range_title('Serovar (overall)', 'O-antigen'), 'Serovar', merged_header_format)
-		self.worksheet.merge_range(self._range_title('cgMLST Subspecies', 'cgMLST Sequence Type'), 'cgMLST', merged_header_format)
-		self.worksheet.merge_range(self._range_title('Mash Subspecies', 'Mash Distance'), 'Mash', merged_header_format)
-		self.worksheet.merge_range(self._range_title('IRIDA URL', 'IRIDA Analysis Date'), 'IRIDA', merged_header_format)
 
 		col = 0
 		for item in header:
-			self.worksheet.write(self.row,col,item, header_format)
+			self.worksheet.write(self.get_row(),col,item, header_format)
 			col += 1
 
-		self.worksheet.set_column(self._range_stitle('Project'), 15)
+		self.worksheet.set_column(self._range_stitle('Project ID'), 15)
 		self.worksheet.set_column(self._range_title('Sample Name', 'Serogroup'), 20)
 		self.worksheet.set_column(self._range_stitle('H1'), 10)
 		self.worksheet.set_column(self._range_stitle('H2'), 10)
@@ -247,22 +263,22 @@ class SistrExcelWriter(SistrResultsWriter):
 		self.worksheet.set_column(self._range_title('Mash Subspecies', 'Mash Serovar'), 20)
 		self.worksheet.set_column(self._range_title('Mash Matching Genome Name', 'IRIDA Analysis Date'), 30)
 
-		self.row += 1
-
 	def _write_row(self, row):
 		col = 0
 		for item in row:
-			self.worksheet.write(self.row,col,item)
+			self.worksheet.write(self.get_row(),col,item)
 			col += 1
 
-		self.row += 1
+	def _group_formatting(self,start_row,end_row):
+		bottom=self.workbook.add_format({'bottom': 5})
+		self.worksheet.set_row(end_row-1, None, bottom)
 
 	def _formatting(self):
 		format_pass = self.workbook.add_format({'bg_color': '#DFF0D8'})
 		format_warning = self.workbook.add_format({'bg_color': '#FCF8E3'})
 		format_fail = self.workbook.add_format({'bg_color': '#F2DEDE'})
 		format_missing = self.workbook.add_format({'bg_color': '#BBBBBB'})
-		form_range=self._to_range_row('QC Status',1,self.row)
+		form_range=self._to_range_row('QC Status',1,self.get_row())
 		self.worksheet.conditional_format(form_range, {'type': 'cell',
 									 'criteria': '==',
 									 'value': '"PASS"',
@@ -279,7 +295,7 @@ class SistrExcelWriter(SistrResultsWriter):
 									 'criteria': '==',
 									 'value': '"MISSING"',
 									 'format': format_missing})
-		self.worksheet.freeze_panes(2,3)
+		self.worksheet.freeze_panes(1,3)
 
 	def close(self):
 		self.workbook.close()
