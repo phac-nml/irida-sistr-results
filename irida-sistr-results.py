@@ -1,11 +1,16 @@
-import argparse, sys
+import argparse
+import sys
+import os
 import logging
 import getpass
+import configparser
 
 from irida_sistr_results.irida_connector import IridaConnector
 from irida_sistr_results.irida_api import IridaAPI
 from irida_sistr_results.irida_sistr_results import IridaSistrResults
 from irida_sistr_results.sistr_writer import SistrCsvWriterShort, SistrExcelWriter
+
+script_dir=os.path.dirname(os.path.realpath(__file__))
 
 def main(irida_url,client_id,client_secret,username,password,verbose,projects,tabular,excel_file,exclude_user_results,exclude_user_existing_results):
 	if (verbose):
@@ -54,12 +59,53 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 	arg_dict = vars(args)
 
-	if not arg_dict['tabular'] and (arg_dict['excel_file'] is None):
-		logging.error("Must use one of --tabular or --to-excel-file [excel-file]")
+	config=configparser.ConfigParser()
+	config.read(script_dir+'/etc/config.ini')
+
+	if ('irida' in config):
+		conf_i = config['irida']
+	if ('data' in config):
+		conf_d = config['data']
+	
+	try:
+		if (arg_dict['irida_url'] is None):
+			if 'url' in conf_i:
+				arg_dict['irida_url'] = conf_i['url']
+			else:
+				raise Exception("Must set --irida-url or irida.url in config file")
+		if (arg_dict['client_id'] is None):
+			if 'client_id' in conf_i:
+				arg_dict['client_id'] = conf_i['client_id']
+			else:
+				raise Exception("Must set --client-id or irida.client_id in config file")
+	
+		if (arg_dict['client_secret'] is None):
+			if 'client_secret' in conf_i:
+				arg_dict['client_secret'] = conf_i['client_secret']
+			else:
+				raise Exception("Must set --client-secret or irida.client_secret in config file")
+	
+		if (arg_dict['username'] is None):
+			if 'username' in conf_i:
+				arg_dict['username'] = conf_i['username']
+			else:
+				raise Exception("Must set --username or irida.username in config file")
+	
+		if arg_dict['excel_file'] is None:
+			if (conf_d['excel_file_name']):
+				arg_dict['excel_file'] = conf_d['excel_file_name']
+			elif (arg_dict['tabular'] is None):
+				raise Exception("Must use one of --tabular or --to-excel-file [excel-file]")
+
+		if (arg_dict['projects'] is None):
+			if (conf_d['projects'] is not None):
+				arg_dict['projects'] = conf_d['projects']
+	
+		if arg_dict['password'] is None:
+			arg_dict['password']=getpass.getpass('Enter password for "'+arg_dict['username']+'":')
+	except Exception as e:
+		logging.error(e.value)
 		parser.print_help()
 		sys.exit(1)
-
-	if arg_dict['password'] is None:
-		arg_dict['password']=getpass.getpass('Enter password:')
 	
 	main(**arg_dict)
