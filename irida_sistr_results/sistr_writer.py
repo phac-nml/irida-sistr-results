@@ -5,7 +5,7 @@ import logging
 from datetime import datetime
 from operator import methodcaller
 
-from sistr_info import SampleSistrInfo
+from irida_sistr_results.sistr_info import SampleSistrInfo
 
 class SistrResultsWriter(object):
 

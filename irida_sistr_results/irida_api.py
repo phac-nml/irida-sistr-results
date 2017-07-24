@@ -1,7 +1,7 @@
 import logging
 import json
 
-from sistr_info import SampleSistrInfo
+from irida_sistr_results.sistr_info import SampleSistrInfo
 
 class IridaAPI(object):
 

@@ -1,8 +1,7 @@
 import json
 import logging
-import ast
 from rauth import OAuth2Service
-from urlparse import urlsplit, urljoin
+from urllib.parse import urlsplit, urljoin
 
 class IridaConnector(object):
 
@@ -30,7 +29,7 @@ class IridaConnector(object):
 			base_url=base_url
 		)
 		
-		token=oauth_service.get_access_token(decoder=ast.literal_eval,**params)
+		token=oauth_service.get_access_token(decoder=json.loads,**params)
 		self.session=oauth_service.get_session(token)
 
 	def get(self,path):
