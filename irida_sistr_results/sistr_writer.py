@@ -95,7 +95,7 @@ class SistrResultsWriter(object):
 			result.get_cgmlst_subspecies(),
 			result.get_cgmlst_genome(),
 			result.get_cgmlst_matching_alleles(),
-			str(result.get_cgmlst_matching_proportion()*100)+'%',
+			result.get_cgmlst_matching_proportion(),
 			result.get_cgmlst_sequence_type(),
 			result.get_mash_subspecies(),
 			result.get_mash_serovar(),
@@ -185,6 +185,8 @@ class SistrExcelWriter(SistrResultsWriter):
 		super(SistrExcelWriter, self).__init__(irida_url)
 		self.workbook = xlsxwriter.Workbook(out_file, {'default_date_format': 'yyyy/mm/dd'})
 		self.worksheet = self.workbook.add_worksheet()
+		self.index_of_cgmlst_percent = self._get_header_list().index('cgMLST Percent Matching')
+		self.percent_format = self.workbook.add_format({'num_format': '0.0%'})
 
 	def _get_header_column_number(self,title):
 		"""Gets the particular column number from the headers given the title.
@@ -259,7 +261,10 @@ class SistrExcelWriter(SistrResultsWriter):
 	def _write_row(self, row):
 		col = 0
 		for item in row:
-			self.worksheet.write(self.get_row(),col,item)
+			if col == self.index_of_cgmlst_percent:
+				self.worksheet.write(self.get_row(),col,item,self.percent_format)
+			else:
+				self.worksheet.write(self.get_row(),col,item)
 			col += 1
 
 	def _group_formatting(self,start_row,end_row):
