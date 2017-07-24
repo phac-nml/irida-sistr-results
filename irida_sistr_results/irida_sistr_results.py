@@ -70,7 +70,7 @@ class IridaSistrResults(object):
 				self.sample_project[sample_id]=[project_id]
 
 	def _timef(self,timestamp):
-		return datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+		return timestamp.strftime('%Y-%m-%d %H:%M:%S')
 
 	def _result_to_sample_log_string(self,r1,r2,word):
 		return "Sample [name="+r1.get_sample_name()+", id="+str(r1.get_sample_id())+"] has exisiting analysis [id="+r1.get_submission_identifier()+", created_date="+self._timef(r1.get_submission_created_date())+"] "+word+" than analysis [id="+r2.get_submission_identifier()+", created_date="+self._timef(r2.get_submission_created_date())+"]."

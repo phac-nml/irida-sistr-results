@@ -69,7 +69,7 @@ class SistrResultsWriter(object):
 		]
 
 	def _format_timestamp(self, timestamp):
-		return datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+		return timestamp.strftime('%Y-%m-%d %H:%M:%S')
 
 	def _get_header_index(self,title):
 		"""Gets the particular index from the headers given the title.
@@ -103,11 +103,11 @@ class SistrResultsWriter(object):
 			result.get_mash_distance(),
 			result.get_qc_messages(),
 			result.get_submission_url(self.irida_url),
-			self._format_timestamp(result.get_sample_created_date()),
+			result.get_sample_created_date(),
 			result.get_sample_id(),
 			result.get_paired_id(),
 			result.get_submission_identifier(),
-			self._format_timestamp(result.get_submission_created_date())
+			result.get_submission_created_date()
 		]
 
 	def write(self,sistr_results):
@@ -134,10 +134,10 @@ class SistrResultsWriter(object):
 	
 		self._formatting()
 
-class SistrCsvWriterShort(SistrResultsWriter):
+class SistrCsvWriter(SistrResultsWriter):
 
 	def __init__(self, irida_url, out_file):
-		super(SistrCsvWriterShort,self).__init__(irida_url)
+		super(SistrCsvWriter,self).__init__(irida_url)
 		self.writer = csv.writer(out_file, delimiter = "\t", quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
 	def _write_header(self,header):
@@ -145,6 +145,11 @@ class SistrCsvWriterShort(SistrResultsWriter):
 
 	def _write_row(self,row):
 		self.writer.writerow(row)
+
+class SistrCsvWriterShort(SistrCsvWriter):
+
+	def __init__(self, irida_url, out_file):
+		super(SistrCsvWriterShort,self).__init__(irida_url,out_file)
 
 	def _get_header_list(self):
 		return [
@@ -165,7 +170,7 @@ class SistrCsvWriterShort(SistrResultsWriter):
 			project,
 			result.get_sample_name(),
 			result.get_qc_status(),
-			self._format_timestamp(result.get_sample_created_date()),
+			result.get_sample_created_date(),
 			result.get_serovar(),
 			result.get_serovar_antigen(),
 			result.get_serovar_cgmlst(),
@@ -173,24 +178,12 @@ class SistrCsvWriterShort(SistrResultsWriter):
 			"{0:.1f}".format(result.get_cgmlst_matching_proportion()*100)+'%',
 			result.get_submission_url(self.irida_url)
 		]
-
-class SistrCsvWriter(SistrResultsWriter):
-
-	def __init__(self, irida_url, out_file):
-		super(SistrCsvWriter,self).__init__(irida_url)
-		self.writer = csv.writer(out_file, delimiter = "\t", quotechar='"', quoting=csv.QUOTE_MINIMAL)
-
-	def _write_header(self,header):
-		self.writer.writerow(header)
-
-	def _write_row(self,row):
-		self.writer.writerow(row)
 		
 class SistrExcelWriter(SistrResultsWriter):
 
 	def __init__(self, irida_url, out_file):
 		super(SistrExcelWriter, self).__init__(irida_url)
-		self.workbook = xlsxwriter.Workbook(out_file)
+		self.workbook = xlsxwriter.Workbook(out_file, {'default_date_format': 'yyyy/mm/dd'})
 		self.worksheet = self.workbook.add_worksheet()
 
 	def _get_header_column_number(self,title):

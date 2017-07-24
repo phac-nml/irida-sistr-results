@@ -1,3 +1,5 @@
+from datetime import datetime
+
 class SampleSistrInfo(object):
 	"""Stores and provides access to SISTR/IRIDA information for a particular sample."""
 
@@ -92,10 +94,10 @@ class SampleSistrInfo(object):
 		return self.sistr_info['submission']['identifier']
 
 	def get_submission_created_date(self):
-		return self.sistr_info['submission']['createdDate']/1000
+		return datetime.fromtimestamp(self.sistr_info['submission']['createdDate']/1000)
 
 	def get_sample_created_date(self):
-		return self.sistr_info['sample']['createdDate']/1000
+		return datetime.fromtimestamp(self.sistr_info['sample']['createdDate']/1000)
 
 	def get_sample_id(self):
 		return self.sistr_info['sample']['identifier']
