@@ -1,0 +1,15 @@
+# This is an example configuration file for the irida-sistr-results.py software. All information here can be set directly on the command-line, but this file provides a method to set default values. You may copy this file to `[irida-sistr-results-dir]/conf/config.ini` or to `~/.local/share/irida-sistr-results/config.ini` and modify the values.
+
+# Connection details for the IRIDA API. Please see https://irida.corefacility.ca/documentation/user/administrator/#managing-system-clients for more information.
+[irida]
+#url=http://localhost
+#client_id=client
+#client_secret=secret
+#username=user
+
+[data]
+# The projects to examine in IRIDA, separated by commas (e.g., projects=1,2). Leave blank for all projects.
+#projects=
+
+# The default output file name (written to directory script is run from). Leave blank for no default.
+#excel_file_name=

@@ -1,9 +1,11 @@
 import argparse
 import sys
 import os
+import shutil
 import logging
 import getpass
 import configparser
+import appdirs
 
 from irida_sistr_results.irida_connector import IridaConnector
 from irida_sistr_results.irida_api import IridaAPI
@@ -11,6 +13,10 @@ from irida_sistr_results.irida_sistr_results import IridaSistrResults
 from irida_sistr_results.sistr_writer import SistrCsvWriterShort, SistrExcelWriter
 
 script_dir=os.path.dirname(os.path.realpath(__file__))
+example_conf_name="config.ini.example"
+example_conf_file=script_dir+"/conf/"+example_conf_name
+
+appname="irida-sistr-results"
 
 def main(irida_url,client_id,client_secret,username,password,verbose,projects,tabular,excel_file,exclude_user_results,exclude_user_existing_results):
 	if (verbose):
@@ -37,6 +43,27 @@ def main(irida_url,client_id,client_secret,username,password,verbose,projects,ta
 		writer.write(sistr_list)
 		writer.close()
 
+def set_user_data_dir():
+	conf_dir=appdirs.user_data_dir(appname)
+	conf_file=conf_dir+'/config.ini'
+
+	if (not os.path.isdir(conf_dir)):
+		logging.debug("Directory "+conf_dir+" does not exist, creating.")
+		os.makedirs(conf_dir)
+
+	if (not os.path.exists(conf_file)):
+		logging.debug("File "+conf_file+" does not exist, copying default.")
+		shutil.copy(example_conf_file,conf_file)
+	else:
+		logging.debug("File "+conf_file+" exists, will not copy default.")
+
+def get_conf_files():
+	"""Gets a list of configuration file paths to attempt to read configuration values from."""
+	set_user_data_dir()
+	return [appdirs.user_data_dir(appname),
+		script_dir+'/conf/config.ini'
+		]
+
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Compile SISTR results from an IRIDA instance into a table.')
 
@@ -60,7 +87,7 @@ if __name__ == '__main__':
 	arg_dict = vars(args)
 
 	config=configparser.ConfigParser()
-	config.read(script_dir+'/etc/config.ini')
+	config.read(get_conf_files())
 
 	if ('irida' in config):
 		conf_i = config['irida']
