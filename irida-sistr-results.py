@@ -7,6 +7,31 @@ from irida_sistr_results.irida_api import IridaAPI
 from irida_sistr_results.irida_sistr_results import IridaSistrResults
 from irida_sistr_results.sistr_writer import SistrCsvWriterShort, SistrExcelWriter
 
+def main(irida_url,client_id,client_secret,username,password,verbose,projects,tabular,excel_file,exclude_user_results,exclude_user_existing_results):
+	if (verbose):
+		logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s:%(message)s')
+	else:
+		logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s:%(message)s')
+
+	connector = IridaConnector(client_id,client_secret,username,password,irida_url)
+	irida_api = IridaAPI(connector)
+	irida_results = IridaSistrResults(irida_api,not exclude_user_results,exclude_user_existing_results)
+	
+	if projects is None:
+		sistr_list = irida_results.get_sistr_results_all_projects()
+	else:
+		sistr_list = irida_results.get_sistr_results_from_projects(projects)
+	
+	if tabular:
+		writer=SistrCsvWriterShort(irida_url,sys.stdout)
+		writer.write(sistr_list)
+		writer.close()
+
+	if excel_file is not None:
+		writer=SistrExcelWriter(irida_url, excel_file)
+		writer.write(sistr_list)
+		writer.close()
+
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Compile SISTR results from an IRIDA instance into a table.')
 
@@ -34,29 +59,7 @@ if __name__ == '__main__':
 		parser.print_help()
 		sys.exit(1)
 
-	if (arg_dict['verbose']):
-		logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s:%(message)s')
-	else:
-		logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s:%(message)s')
-
 	if arg_dict['password'] is None:
 		arg_dict['password']=getpass.getpass('Enter password:')
 	
-	connector = IridaConnector(arg_dict['client_id'],arg_dict['client_secret'],arg_dict['username'],arg_dict['password'], arg_dict['irida_url'])
-	irida_api = IridaAPI(connector)
-	irida_results = IridaSistrResults(irida_api,not arg_dict['exclude_user_results'],not arg_dict['exclude_user_existing_results'])
-	
-	if arg_dict['projects'] is None:
-		sistr_list = irida_results.get_sistr_results_all_projects()
-	else:
-		sistr_list = irida_results.get_sistr_results_from_projects(arg_dict['projects'])
-	
-	if arg_dict['tabular']:
-		writer=SistrCsvWriterShort(arg_dict['irida_url'],sys.stdout)
-		writer.write(sistr_list)
-		writer.close()
-
-	if arg_dict['excel_file'] is not None:
-		writer=SistrExcelWriter(arg_dict['irida_url'], arg_dict['excel_file'])
-		writer.write(sistr_list)
-		writer.close()
+	main(**arg_dict)
