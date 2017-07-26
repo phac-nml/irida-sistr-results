@@ -83,13 +83,16 @@ class IridaAPI(object):
 	
 						sistr=self.irida_connector.get(sistr_rel)
 						
-						sistr_info_curr=self.get_sistr_info_from_submission(sistr)
-						if (sistr_info is None):
-							sistr_info = sistr_info_curr
-						elif sistr_info_curr.get_qc_status() == 'PASS' and (not sistr_info.has_sistr_results() or sistr_info.get_qc_status() != 'PASS'):
-							sistr_info = sistr_info_curr
-						elif sistr_info_curr.get_qc_status() == 'PASS' and (sistr_info_curr.get_submission_created_date() > sistr_info.get_submission_created_date()):
-							sistr_info = sistr_info_curr
+						if (sistr['analysisState'] != 'COMPLETED'):
+							logging.warning("SISTR results associated with sample="+sample['sampleName']+" are in state="+sistr['analysisState']+" and will not be included in table")
+						else:
+							sistr_info_curr=self.get_sistr_info_from_submission(sistr)
+							if (sistr_info is None):
+								sistr_info = sistr_info_curr
+							elif sistr_info_curr.get_qc_status() == 'PASS' and (not sistr_info.has_sistr_results() or sistr_info.get_qc_status() != 'PASS'):
+								sistr_info = sistr_info_curr
+							elif sistr_info_curr.get_qc_status() == 'PASS' and (sistr_info_curr.get_submission_created_date() > sistr_info.get_submission_created_date()):
+								sistr_info = sistr_info_curr
 					elif sistr_info is None:
 						sistr_info = SampleSistrInfo({'sample': sample,
 								'paired_files': sequencing_object,
