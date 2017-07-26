@@ -1,7 +1,6 @@
 import csv
 import xlsxwriter
 import abc
-import logging
 from datetime import datetime
 from operator import methodcaller
 

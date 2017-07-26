@@ -3,6 +3,8 @@ import json
 
 from irida_sistr_results.sistr_info import SampleSistrInfo
 
+logger=logging.getLogger("irida-api")
+
 class IridaAPI(object):
 
 	def __init__(self,irida_connector):
@@ -27,7 +29,7 @@ class IridaAPI(object):
 		return False
 
 	def _log_json(self,json_obj):
-		logging.debug(json.dumps(json_obj, sort_keys=True, separators=(',',':'), indent=4))
+		logger.debug(json.dumps(json_obj, sort_keys=True, separators=(',',':'), indent=4))
 
 	def get_sistr_predictions(self, sistr_analysis_href):
 		sistr_pred_json=None
@@ -90,7 +92,7 @@ class IridaAPI(object):
 						sistr=self.irida_connector.get(sistr_rel)
 						
 						if (sistr['analysisState'] != 'COMPLETED'):
-							logging.warning("SISTR results associated with sample="+sample['sampleName']+" are in state="+sistr['analysisState']+" and will not be included in table")
+							logger.warning("SISTR results associated with sample="+sample['sampleName']+" are in state="+sistr['analysisState']+" and will not be included in table")
 						else:
 							sistr_info_curr=self.get_sistr_info_from_submission(sistr)
 							if (sistr_info is None):
@@ -143,7 +145,7 @@ class IridaAPI(object):
 			if (sistr['analysisState'] == 'COMPLETED'):
 				sistr_analysis_list.append(self.get_sistr_info_from_submission(sistr))
 			else:
-				logging.debug('Skipping incompleted sistr submission [id='+sistr['identifier']+']')
+				logger.debug('Skipping incompleted sistr submission [id='+sistr['identifier']+']')
 
 		return sistr_analysis_list
 

@@ -3,11 +3,14 @@ import logging
 from rauth import OAuth2Service
 from urllib.parse import urlsplit, urljoin
 
+logger=logging.getLogger("irida_connector")
+
 class IridaConnector(object):
 
-	def __init__(self,client_id,client_secret,username,password,base_url):
+	def __init__(self,client_id,client_secret,username,password,base_url,timeout):
 		base_url=base_url.rstrip('/')
 		self._base_path=urlsplit(base_url).path
+		self._timeout=timeout
 
 		access_token_url=base_url+'/api/oauth/token'
 	
@@ -34,8 +37,8 @@ class IridaConnector(object):
 
 	def get(self,path):
 		path=self._join_path(path)
-		logging.debug("Getting path="+path)
-		response=self.session.get(path,timeout=600)
+		logger.debug("Getting path="+path)
+		response=self.session.get(path,timeout=self._timeout)
 
 		if (response.ok):
 			self._log_json(response.json())
@@ -59,7 +62,7 @@ class IridaConnector(object):
 		return self.get(path)['resources']
 
 	def get_file(self, path):
-		return self.session.get(path, headers={'Accept': 'text/plain'}, timeout=600)
+		return self.session.get(path, headers={'Accept': 'text/plain'}, timeout=self._timeout)
 
 	def _log_json(self,json_obj):
-		logging.debug(json.dumps(json_obj, sort_keys=True, separators=(',',':'), indent=4))
+		logger.debug(json.dumps(json_obj, sort_keys=True, separators=(',',':'), indent=4))
