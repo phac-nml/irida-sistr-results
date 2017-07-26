@@ -35,7 +35,7 @@ class IridaConnector(object):
 	def get(self,path):
 		path=self._join_path(path)
 		logging.debug("Getting path="+path)
-		response=self.session.get(path)
+		response=self.session.get(path,timeout=600)
 
 		if (response.ok):
 			self._log_json(response.json())
@@ -59,7 +59,7 @@ class IridaConnector(object):
 		return self.get(path)['resources']
 
 	def get_file(self, path):
-		return self.session.get(path, headers={'Accept': 'text/plain'})
+		return self.session.get(path, headers={'Accept': 'text/plain'}, timeout=600)
 
 	def _log_json(self,json_obj):
 		logging.debug(json.dumps(json_obj, sort_keys=True, separators=(',',':'), indent=4))
