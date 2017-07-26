@@ -167,7 +167,7 @@ if __name__ == '__main__':
 				raise Exception("Must use one of --tabular or --to-excel-file [excel-file]")
 
 		if (arg_dict['projects'] is None):
-			if (conf_d['projects'] is not None):
+			if ('projects' in conf_d and conf_d['projects'] is not None):
 				arg_dict['projects'] = conf_d['projects']
 			else:
 				arg_dict['all_projects']=True
