@@ -13,6 +13,7 @@ class SistrResultsWriter(object):
 		__metaclass__ = abc.ABCMeta
 		self.irida_url=irida_url
 		self.row=0
+		self.end_of_project=False
 
 	@abc.abstractmethod
 	def _write_row(self,row):
@@ -25,9 +26,12 @@ class SistrResultsWriter(object):
 	def _formatting(self):
 		return
 
-	def _group_formatting(self,start_row,end_row):
-		"""Applies formatting to a group of rows"""
-		return
+	def _set_end_of_project(self,end_of_project):
+		"""Sets whether or not we are at the end row of a project group"""
+		self.end_of_project=end_of_project
+
+	def _is_end_of_project(self):
+		return self.end_of_project
 
 	def close(self):
 		return
@@ -123,14 +127,18 @@ class SistrResultsWriter(object):
 
 			sistr_results_sorted = sorted(sistr_results_project.values(), key=methodcaller('get_sample_created_date'))
 			sistr_results_sorted = sorted(sistr_results_sorted, key=methodcaller('get_qc_status_numerical'), reverse=True)
-			for result in sistr_results_sorted:
+			for index,result in enumerate(sistr_results_sorted):
+				# last element in this list
+				if (index == len(sistr_results_sorted)-1):
+					self._set_end_of_project(True)
+
 				if (not result.has_sistr_results()):
 					self._write_row([project,result.get_sample_name(),result.get_qc_status()])
 				else:
 					self._write_row(self._get_row_list(project,result))
 				self.set_row(self.get_row()+1)
 
-			self._group_formatting(row_start_project,self.get_row())
+			self._set_end_of_project(False)
 	
 		self._formatting()
 
@@ -186,6 +194,9 @@ class SistrExcelWriter(SistrResultsWriter):
 		self.workbook = xlsxwriter.Workbook(out_file, {'default_date_format': 'yyyy/mm/dd'})
 		self.worksheet = self.workbook.add_worksheet()
 		self.index_of_cgmlst_percent = self._get_header_list().index('cgMLST Percent Matching')
+		self.index_of_date_formats = [self._get_header_list().index('Sample Created Date'),
+						self._get_header_list().index('IRIDA Analysis Date')
+						]
 		self.percent_format = self.workbook.add_format({'num_format': '0.0%'})
 
 	def _get_header_column_number(self,title):
@@ -262,14 +273,34 @@ class SistrExcelWriter(SistrResultsWriter):
 		col = 0
 		for item in row:
 			if col == self.index_of_cgmlst_percent:
-				self.worksheet.write(self.get_row(),col,item,self.percent_format)
+				self.worksheet.write(self.get_row(),col,item,self._get_percent_format())
+			elif col in self.index_of_date_formats:
+				self.worksheet.write(self.get_row(),col,item,self._get_date_format())
 			else:
-				self.worksheet.write(self.get_row(),col,item)
+				self.worksheet.write(self.get_row(),col,item,self._get_regular_format())
 			col += 1
 
-	def _group_formatting(self,start_row,end_row):
-		bottom=self.workbook.add_format({'bottom': 5})
-		self.worksheet.set_row(end_row-1, None, bottom)
+		if self._is_end_of_project():
+			bottom_format=self.workbook.add_format({'bottom': 5})
+			self.worksheet.set_row(self.get_row(),None,bottom_format)
+
+	def _get_percent_format(self):
+		if (self._is_end_of_project()):
+			return self.workbook.add_format({'num_format': '0.0%', 'bottom': 5})
+		else:
+			return self.workbook.add_format({'num_format': '0.0%'})
+
+	def _get_date_format(self):
+		if (self._is_end_of_project()):
+			return self.workbook.add_format({'num_format': 'yyyy/mm/dd', 'bottom': 5})
+		else:
+			return self.workbook.add_format({'num_format': 'yyyy/mm/dd'})
+
+	def _get_regular_format(self):
+		if (self._is_end_of_project()):
+			return self.workbook.add_format({'bottom': 5})
+		else:
+			return self.workbook.add_format()
 
 	def _formatting(self):
 		format_pass = self.workbook.add_format({'bg_color': '#DFF0D8'})
