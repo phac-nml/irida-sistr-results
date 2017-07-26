@@ -10,7 +10,10 @@ class SampleSistrInfo(object):
 		return self.sistr_info['has_results']
 
 	def get_sample_name(self):
-		return self.sistr_info['sample']['sampleName']
+		if (self.sistr_info['sample'] is not None):
+			return self.sistr_info['sample']['sampleName']
+		else:
+			return "N/A"
 
 	def _get_sistr(self):
 		return self.sistr_info['sistr_predictions'][0]
@@ -97,10 +100,16 @@ class SampleSistrInfo(object):
 		return datetime.fromtimestamp(self.sistr_info['submission']['createdDate']/1000)
 
 	def get_sample_created_date(self):
-		return datetime.fromtimestamp(self.sistr_info['sample']['createdDate']/1000)
+		if (self.sistr_info['sample'] is not None):
+			return datetime.fromtimestamp(self.sistr_info['sample']['createdDate']/1000)
+		else:
+			return "N/A"
 
 	def get_sample_id(self):
-		return self.sistr_info['sample']['identifier']
+		if (self.sistr_info['sample'] is not None):
+			return self.sistr_info['sample']['identifier']
+		else:
+			return "N/A"
 
 	def get_paired_id(self):
 		return self.sistr_info['paired_files'][0]['identifier']

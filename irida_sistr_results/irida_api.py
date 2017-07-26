@@ -45,6 +45,12 @@ class IridaAPI(object):
 	
 		return sistr_pred_json
 
+	def has_sample_in_paired(self, paired_json):
+		if (len(paired_json) > 0 and paired_json[0]['links'] is not None):
+			return self._has_rel_in_links('sample',paired_json[0]['links'])
+		else:
+			return False
+
 	def get_sample_from_paired(self, paired_json):
 		sample = None
 	
@@ -121,7 +127,10 @@ class IridaAPI(object):
 		sistr_info['paired_files']=paired
 		sistr_info['sistr_predictions'] = self.get_sistr_predictions(sistr_analysis_href)
 		sistr_info['has_results'] = True
-		sistr_info['sample'] = self.get_sample_from_paired(paired)
+		if (self.has_sample_in_paired(paired)):
+			sistr_info['sample'] = self.get_sample_from_paired(paired)
+		else:
+			sistr_info['sample']=None
 		sistr_info['submission'] = submission
 	
 		return SampleSistrInfo(sistr_info)
