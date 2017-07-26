@@ -64,12 +64,15 @@ class IridaSistrResults(object):
 		project_results=self.irida_api.get_sistr_results_for_project(project_id)
 
 		for result in project_results:
-			sample_id=result.get_sample_id()
-			self.sistr_results[project_id][sample_id]=result
-			if (sample_id in self.sample_project):
-				self.sample_project[sample_id].append(project_id)
-			else:	
-				self.sample_project[sample_id]=[project_id]
+			if result is None:
+				logger.warning("None result found in project "+str(project_id)+", will skip")
+			else:
+				sample_id=result.get_sample_id()
+				self.sistr_results[project_id][sample_id]=result
+				if (sample_id in self.sample_project):
+					self.sample_project[sample_id].append(project_id)
+				else:	
+					self.sample_project[sample_id]=[project_id]
 
 	def _timef(self,timestamp):
 		return timestamp.strftime('%Y-%m-%d %H:%M:%S')
