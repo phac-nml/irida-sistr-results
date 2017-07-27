@@ -36,7 +36,10 @@ class IridaSistrResults(object):
 
 	def _load_sistr_results_from_user(self):
 		user_results=self.irida_api.get_sistr_submissions_for_user()
-		for result in user_results:
+		self._load_additional_sistr_results(user_results)
+
+	def _load_additional_sistr_results(self,additional_results):
+		for result in additional_results:
 			sample_id=result.get_sample_id()
 
 			if (sample_id in self.sample_project and result.has_sistr_results()):
@@ -50,7 +53,7 @@ class IridaSistrResults(object):
 								logger.info(self._result_to_sample_log_string(sistr_results_project[sample_id], result, "older")+" Updating.")
 								sistr_results_project[sample_id] = result
 							else:
-								logger.info("Found result for sample="+result.get_sample_name() + " for user. Will not replace with exisiting result.")
+								logger.info("Found result for sample="+result.get_sample_name() + ". Will not replace with exisiting result.")
 						else:
 							logger.info(self._result_to_sample_log_string(sistr_results_project[sample_id], result, "newer")+" Not updating.")
 
