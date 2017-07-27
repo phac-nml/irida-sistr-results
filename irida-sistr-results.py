@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import argparse
 import sys
 import os
@@ -125,9 +127,6 @@ if __name__ == '__main__':
 
 	if ('irida' in config):
 		conf_i = config['irida']
-	if ('data' in config):
-		conf_d = config['data']
-	
 	try:
 		if (arg_dict['irida_url'] is None):
 			if 'url' in conf_i:
@@ -160,17 +159,11 @@ if __name__ == '__main__':
 		elif (type(arg_dict['timeout']) is not int):
 			arg_dict['timeout']=int(arg_dict['timeout'])
 	
-		if arg_dict['excel_file'] is None:
-			if (conf_d['excel_file_name']):
-				arg_dict['excel_file'] = conf_d['excel_file_name']
-			elif (arg_dict['tabular'] is None):
-				raise Exception("Must use one of --tabular or --to-excel-file [excel-file]")
+		if (arg_dict['excel_file'] is None and arg_dict['tabular'] is None):
+			raise Exception("Must use one of --tabular or --to-excel-file [excel-file]")
 
-		if (arg_dict['projects'] is None):
-			if ('projects' in conf_d and conf_d['projects'] is not None):
-				arg_dict['projects'] = conf_d['projects']
-			else:
-				arg_dict['all_projects']=True
+		if (arg_dict['projects'] is None and arg_dict['all_projects'] is None):
+			raise Exception("No --project or --all-projects parameter found.")
 
 		if arg_dict['password'] is None:
 			arg_dict['password']=getpass.getpass('Enter password for "'+arg_dict['username']+'":')

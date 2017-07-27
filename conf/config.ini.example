@@ -7,9 +7,5 @@
 #client_secret=secret
 #username=user
 
-[data]
-# The projects to examine in IRIDA, separated by commas (e.g., projects=1,2). Leave blank for all projects.
-#projects=
-
-# The default output file name (written to directory script is run from). Leave blank for no default.
-#excel_file_name=
+## Timeout limit (in seconds) for an individual connection to IRIDA. Please increase if requests are taking too long.
+#timeout=600
