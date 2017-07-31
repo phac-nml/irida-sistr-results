@@ -219,13 +219,44 @@ class SistrCsvWriter(SistrResultsWriter):
 
 	def __init__(self, irida_url, out_file):
 		super(SistrCsvWriter,self).__init__(irida_url)
-		self.writer = csv.writer(out_file, delimiter = "\t", quotechar='"', quoting=csv.QUOTE_MINIMAL)
+		out_file_h = open(out_file, 'w')
+		self.writer = csv.writer(out_file_h, delimiter = "\t", quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
 	def _write_header(self,header):
 		self.writer.writerow(header)
 
 	def _write_row(self,row):
 		self.writer.writerow(row)
+
+	def _get_row_list(self,project,result):
+		return [
+			project,
+			result.get_sample_name(),
+			result.get_qc_status(),
+			result.get_serovar(),
+			result.get_serovar_antigen(),
+			result.get_serovar_cgmlst(),
+			result.get_serogroup(),
+			result.get_h1(),
+			result.get_h2(),
+			result.get_o_antigen(),
+			result.get_cgmlst_subspecies(),
+			result.get_cgmlst_genome(),
+			result.get_cgmlst_matching_alleles(),
+			"{0:.1f}".format(result.get_cgmlst_matching_proportion()*100)+'%',
+			result.get_cgmlst_sequence_type(),
+			result.get_mash_subspecies(),
+			result.get_mash_serovar(),
+			result.get_mash_genome(),
+			result.get_mash_distance(),
+			result.get_qc_messages(),
+			result.get_submission_url(self.irida_url),
+			result.get_sample_created_date(),
+			result.get_sample_id(),
+			result.get_paired_id(),
+			result.get_submission_identifier(),
+			result.get_submission_created_date()
+		]
 
 class SistrCsvWriterShort(SistrCsvWriter):
 	"""Creates a shortened version of the results in a tab-delimited format"""
