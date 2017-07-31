@@ -113,6 +113,36 @@ class SistrResultsWriter(object):
 			result.get_submission_created_date()
 		]
 
+	def _get_no_results_row_list(self,project,result):
+		return [
+			project,
+			result.get_sample_name(),
+			result.get_qc_status(),
+			None,
+			None,
+			None,
+			None,
+			None,
+			None,
+			None,
+			None,
+			None,
+			None,
+			None,
+			None,
+			None,
+			None,
+			None,
+			None,
+			None,
+			None,
+			result.get_sample_created_date(),
+			result.get_sample_id(),
+			None,
+			None,
+			None,
+		]
+
 	def write(self,sistr_results):
 		
 		self.set_row(0)
@@ -132,7 +162,7 @@ class SistrResultsWriter(object):
 					self._set_end_of_project(True)
 
 				if (not result.has_sistr_results()):
-					self._write_row([project,result.get_sample_name(),result.get_qc_status()])
+					self._write_row(self._get_no_results_row_list(project,result))
 				else:
 					self._write_row(self._get_row_list(project,result))
 				self.set_row(self.get_row()+1)
@@ -184,6 +214,20 @@ class SistrCsvWriterShort(SistrCsvWriter):
 			result.get_cgmlst_matching_alleles(),
 			"{0:.1f}".format(result.get_cgmlst_matching_proportion()*100)+'%',
 			result.get_submission_url(self.irida_url)
+		]
+
+	def _get_no_results_row_list(self,project,result):
+		return [
+			project,
+			result.get_sample_name(),
+			result.get_qc_status(),
+			None,
+			None,
+			None,
+			None,
+			None,
+			None,
+			None
 		]
 		
 class SistrExcelWriter(SistrResultsWriter):
