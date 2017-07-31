@@ -6,6 +6,7 @@ from irida_sistr_results.sistr_info import SampleSistrInfo
 logger=logging.getLogger("irida-api")
 
 class IridaAPI(object):
+	"""A class for dealing with higher-level API functionality of the IRIDA REST API."""
 
 	def __init__(self,irida_connector):
 		self.irida_connector=irida_connector
@@ -47,13 +48,13 @@ class IridaAPI(object):
 	
 		return sistr_pred_json
 
-	def has_sample_in_paired(self, paired_json):
+	def _has_sample_in_paired(self, paired_json):
 		if (len(paired_json) > 0 and paired_json[0]['links'] is not None):
 			return self._has_rel_in_links('sample',paired_json[0]['links'])
 		else:
 			return False
 
-	def get_sample_from_paired(self, paired_json):
+	def _get_sample_from_paired(self, paired_json):
 		sample = None
 	
 		links=paired_json[0]['links']
@@ -66,12 +67,32 @@ class IridaAPI(object):
 			return sample
 	
 	def get_user_project(self,project_id):
+		"""Gets information on a particular IRIDA project
+
+		Args:
+		    project_id: The id of the project to search.
+
+		Returns:  The JSON results for the IRIDA project
+		"""
 		return self.irida_connector.get('/api/projects/'+str(project_id))
 
 	def get_user_projects(self):
+		"""Gets information on all projects in IRIDA the current user has access to.
+
+		Returns:  The JSON results for all the user-accessible projects in IRIDA.
+		"""
 		return self.irida_connector.get_resources('/api/projects')
 	
 	def get_sistr_results_for_project(self, project):
+		"""Gets information on all SISTR results in a project (that is, automated SISTR results).
+		   This is structured as a list of objects (on per sample) containing a SampleSistrInfo object if available and whether 
+		   or not these results are available for a sample (from keys 'has_results').
+
+		Args:
+		    project:  The project to search through.
+
+		Returns: A list of dictionaries containing SampleSistrInfo objects and/or indicators for missing results.
+		"""
 		sistr_results=[]
 	
 		sistr_results_for_project=self.irida_connector.get_resources('/api/projects/'+str(project)+'/samples')
@@ -116,6 +137,13 @@ class IridaAPI(object):
 		return sistr_results
 		
 	def get_sistr_info_from_submission(self, submission):
+		"""Gets the relevent SISTR information from an IRIDA SISTR AnalysisSubmission.
+
+		Args:
+		    submission The IRIDA SISTR AnalysisSubmission data structure.
+
+		Returns: The SISTR information object (SampleSistrInfo) fro this submission.
+		"""
 		sistr_info={}
 	
 		links=submission['links']
@@ -134,8 +162,8 @@ class IridaAPI(object):
 		sistr_info['paired_files']=paired
 		sistr_info['sistr_predictions'] = self._get_sistr_predictions(sistr_analysis_href)
 		sistr_info['has_results'] = True
-		if (self.has_sample_in_paired(paired)):
-			sistr_info['sample'] = self.get_sample_from_paired(paired)
+		if (self._has_sample_in_paired(paired)):
+			sistr_info['sample'] = self._get_sample_from_paired(paired)
 		else:
 			sistr_info['sample']=None
 		sistr_info['submission'] = submission
@@ -143,6 +171,10 @@ class IridaAPI(object):
 		return SampleSistrInfo(sistr_info)
 	
 	def get_sistr_submissions_for_user(self):
+		"""Gets all SISTR results accessible by a user (includes those submitted by a user or shared with a user via a project).
+
+		Returns:  A list of SampleSistrInfo objects that the current user has access to.
+		"""
 		sistr_submissions_for_user=self.irida_connector.get_resources('/api/analysisSubmissions/analysisType/sistr')
 		
 		sistr_analysis_list=[]

@@ -4,8 +4,18 @@ from datetime import datetime
 logger=logging.getLogger("irida-sistr-results")
 
 class IridaSistrResults(object):
+	"""Class for constructing the top-level data structures mapping projects to lists of SISTR results."""
 
 	def __init__(self,irida_api,include_user_results,update_existing_with_user_results):
+		"""Creates a new IridaSistrResults object.
+
+		Args:
+		    irida_api:  The IridaAPI object for connecting to IRIDA.
+		    include_user_results:  Whether or not to include all user-accessible results (or just automated SISTR results).
+		    update_existing_with_user_results:  Whether or not to update existing results with newer results run by a user.
+
+		Returns:  A new IridaSistrResults object.
+		"""
 		self.irida_api=irida_api
 		self.include_user_results=include_user_results
 		self.update_existing_with_user_results=update_existing_with_user_results
@@ -13,10 +23,21 @@ class IridaSistrResults(object):
 		self.sample_project={}
 
 	def get_sistr_results_all_projects(self):
+		"""Gets SISTR results from all projects accessible by the current user.
+
+		Returns:  All SISTR results from all projects.
+		"""
 		projects = self.irida_api.get_user_projects()
 		return self._get_sistr_results(projects)
 
 	def get_sistr_results_from_projects(self, project_ids):
+		"""Gets SISTR results from the list of IRIDA project identifiers.
+
+		Args:
+		    project_ids:  The list of project ids.
+
+		Returns:  All SISTR results from the passed projects.
+		"""
 		projects=[]
 		for p in project_ids:
 			project = self.irida_api.get_user_project(p)

@@ -7,8 +7,14 @@ from operator import methodcaller
 from irida_sistr_results.sistr_info import SampleSistrInfo
 
 class SistrResultsWriter(object):
+	"""Abstract class resonsible for writing SISTR results to a table format"""
 
 	def __init__(self,irida_url):
+		"""Construct a new SistrResultsWriter object corresponding to the passed irida_url
+
+		Args:
+		    irida_url: The URL to the IRIDA instance, used to insert URLs into the table
+		"""
 		__metaclass__ = abc.ABCMeta
 		self.irida_url=irida_url
 		self.row=0
@@ -16,13 +22,16 @@ class SistrResultsWriter(object):
 
 	@abc.abstractmethod
 	def _write_row(self,row):
+		"""Abstract method for writing a particular row for the table"""
 		return
 
 	@abc.abstractmethod
 	def _write_header(self,header):
+		"""Abstract method for writing the table header"""
 		return
 
 	def _formatting(self):
+		"""Override to implement additional formatting to the table after all rows have finished writing"""
 		return
 
 	def _set_end_of_project(self,end_of_project):
@@ -33,15 +42,26 @@ class SistrResultsWriter(object):
 		return self.end_of_project
 
 	def close(self):
+		"""Closes writing to a file"""
 		return
 
 	def get_row(self):
+		"""Gets the current row number"""
 		return self.row
 
 	def set_row(self,row):
+		"""Sets the current row number
+
+		Args:
+			row: The new row number
+		"""
 		self.row=row
 
 	def _get_header_list(self):
+		"""Get a list of header titles for the table
+
+		Return: A list of header titles.
+		"""
 		return [
 			'Project ID',
 			'Sample Name',
@@ -77,13 +97,22 @@ class SistrResultsWriter(object):
 	def _get_header_index(self,title):
 		"""Gets the particular index from the headers given the title.
 
-		title: The title of the header column.
+		Args:
+		    title: The title of the header column.
 
-		returns: The index into the header list.
+		Returns: The index into the header list.
 		"""
 		return self._get_header_list().index(title)
 
 	def _get_row_list(self,project,result):
+		"""Given the project number and result object, creates a list of relavent information to print per row.
+
+		Args:
+		    project: The current project identifier.
+		    result:  The current SistrInfo result object.
+
+		Return: A list of relevant information for the row
+		"""
 		return [
 			project,
 			result.get_sample_name(),
@@ -114,6 +143,15 @@ class SistrResultsWriter(object):
 		]
 
 	def _get_no_results_row_list(self,project,result):
+		"""Gets a list respresenting no/missing results for a sample.
+
+		Args:
+		    project: The current project identifier.
+		    result:  The current SistrInfo result object.
+
+		Return: A list of relevant information in the case of a no/missing result row.
+		"""
+
 		return [
 			project,
 			result.get_sample_name(),
@@ -144,6 +182,11 @@ class SistrResultsWriter(object):
 		]
 
 	def write(self,sistr_results):
+		"""Writes out the results to an appropriate file with the appropriate format
+
+		Args:
+		    sistr_results:  The SISTR results to write to a table.
+		"""
 		
 		self.set_row(0)
 		self._write_header(self._get_header_list())
@@ -172,6 +215,7 @@ class SistrResultsWriter(object):
 		self._formatting()
 
 class SistrCsvWriter(SistrResultsWriter):
+	"""An abstact writer used to create CSV/tab-delimited files"""
 
 	def __init__(self, irida_url, out_file):
 		super(SistrCsvWriter,self).__init__(irida_url)
@@ -184,6 +228,7 @@ class SistrCsvWriter(SistrResultsWriter):
 		self.writer.writerow(row)
 
 class SistrCsvWriterShort(SistrCsvWriter):
+	"""Creates a shortened version of the results in a tab-delimited format"""
 
 	def __init__(self, irida_url, out_file):
 		super(SistrCsvWriterShort,self).__init__(irida_url,out_file)
@@ -231,6 +276,7 @@ class SistrCsvWriterShort(SistrCsvWriter):
 		]
 		
 class SistrExcelWriter(SistrResultsWriter):
+	"""A writer object for writing SISTR results to an excel spreadsheet"""
 
 	def __init__(self, irida_url, out_file):
 		super(SistrExcelWriter, self).__init__(irida_url)
@@ -245,27 +291,30 @@ class SistrExcelWriter(SistrResultsWriter):
 	def _get_header_column_number(self,title):
 		"""Gets the particular column number from the headers given the title.
 
-		title: The title of the header column.
+		Args:
+		    title: The title of the header column.
 
-		returns: The column number (starting with 1) from the header list.
+		Returns: The column number (starting with 1) from the header list.
 		"""
 		return self._get_header_index(title)+1
 
 	def _get_header_column_letter(self,title):
 		"""Gets the particular column letter from the headers given the title.
 
-		title: The title of the header column.
+		Args:
+		    title: The title of the header column.
 
-		returns: The column letter (starting with A) from the header list.
+		Returns: The column letter (starting with A) from the header list.
 		"""
 		return self._to_letter(self._get_header_index(title))
 
 	def _range_stitle(self,title):
 		"""Gets the particular column letter range from the headers given a single title.
 
-		title: The title of the header column.
+		Args:
+		    title: The title of the header column.
 
-		returns: The column range (e.g., A:A) from the header list.
+		Returns: The column range (e.g., A:A) from the header list.
 		"""
 		return self._range_title(title,title)
 

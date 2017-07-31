@@ -22,6 +22,7 @@ appname="irida-sistr-results"
 logger=logging.getLogger("irida-sistr-results")
 
 def main(irida_url,client_id,client_secret,username,password,verbose,projects,tabular,excel_file,exclude_user_results,exclude_user_existing_results,all_projects,timeout):
+	"""Main method connecting to IRIDA/writing SISTR results file."""
 	if (verbose):
 		logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
 	else:
