@@ -31,7 +31,7 @@ class IridaAPI(object):
 	def _log_json(self,json_obj):
 		logger.debug(json.dumps(json_obj, sort_keys=True, separators=(',',':'), indent=4))
 
-	def get_sistr_predictions(self, sistr_analysis_href):
+	def _get_sistr_predictions(self, sistr_analysis_href):
 		sistr_pred_json=None
 	
 		analysis=self.irida_connector.get(sistr_analysis_href)
@@ -132,7 +132,7 @@ class IridaAPI(object):
 		paired=self.irida_connector.get_resources(paired_path)
 	
 		sistr_info['paired_files']=paired
-		sistr_info['sistr_predictions'] = self.get_sistr_predictions(sistr_analysis_href)
+		sistr_info['sistr_predictions'] = self._get_sistr_predictions(sistr_analysis_href)
 		sistr_info['has_results'] = True
 		if (self.has_sample_in_paired(paired)):
 			sistr_info['sample'] = self.get_sample_from_paired(paired)
