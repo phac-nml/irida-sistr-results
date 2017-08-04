@@ -85,7 +85,7 @@ class SistrResultsWriter(object):
 			'QC Messages',
 			'IRIDA URL',
 			'Sample Created Date',
-			'IRIDA Sample Identifer',
+			'IRIDA Sample Identifier',
 			'IRIDA File Pair Identifier',
 			'IRIDA Submission Identifier',
 			'IRIDA Analysis Date'
