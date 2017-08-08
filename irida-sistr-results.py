@@ -30,7 +30,7 @@ def main(irida_url,client_id,client_secret,username,password,verbose,projects,ta
 
 	connector = IridaConnector(client_id,client_secret,username,password,irida_url,timeout)
 	irida_api = IridaAPI(connector)
-	irida_results = IridaSistrResults(irida_api,not exclude_user_results,exclude_user_existing_results)
+	irida_results = IridaSistrResults(irida_api,not exclude_user_results,not exclude_user_existing_results)
 	
 	if all_projects:
 		logger.info("Getting results for all projects in IRIDA")
