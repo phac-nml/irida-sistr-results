@@ -61,6 +61,7 @@ def main(irida_url,client_id,client_secret,username,password,verbose,projects,ta
 				logger.error("Somehow got wrong qc info '" + result.get_qc_status()+"'")
 
 	proj_string = 'projects' if (total_projects > 1) else 'project'
+	logger.info("Done getting SISTR results\n")
 	logger.info("Examined "+str(total_sample_results)+" samples in "+str(total_projects) + ' ' + proj_string + " with statuses of")
 	logger.info("PASS:    "+str(pass_sample_results))
 	logger.info("WARN:    "+str(warn_sample_results))
@@ -101,11 +102,14 @@ def get_conf_files():
 		]
 
 if __name__ == '__main__':
+	script_name=os.path.basename(sys.argv[0])
 	parser = argparse.ArgumentParser(description='Compile SISTR results from an IRIDA instance into a table.',
 		formatter_class=argparse.RawTextHelpFormatter,
 		epilog= "\nExample:"+
-			"\n  " + sys.argv[0] + " --project 1 --project 2 --username irida-user --to-excel-file out.xlsx"+
-			"\n    Exports SISTR results form projects [1,2] to a file 'out.xlsx'")
+			"\n\t" + script_name + " --all-projects --username irida-user --to-excel-file out.xlsx"+
+			"\n\t\tExports all SISTR results from all projects to a file 'out.xlsx'"+
+			"\n\n\t" + script_name + " --project 1 --project 2 --username irida-user --to-excel-file out.xlsx"+
+			"\n\t\tExports SISTR results form projects [1,2] to a file 'out.xlsx'")
 
 	parser.add_argument('--irida-url', action='store', dest='irida_url', help='The URL to the IRIDA instance.')
 	parser.add_argument('--client-id', action='store', dest='client_id', help='The client id for an IRIDA instance.')
