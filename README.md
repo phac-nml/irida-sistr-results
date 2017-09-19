@@ -104,10 +104,10 @@ optional arguments:
   -V, --version         show program's version number and exit
 
 Example:
-	irida-sistr-results.py --all-projects --username irida-user --to-excel-file out.xlsx
+	irida-sistr-results.py -a -u irida-user -o out.xlsx
 		Exports all SISTR results from all projects to a file 'out.xlsx'
 
-	irida-sistr-results.py --project 1 --project 2 --username irida-user --to-excel-file out.xlsx
+	irida-sistr-results.py -p 1 -p 2 -u irida-user -o out.xlsx
 		Exports SISTR results form projects [1,2] to a file 'out.xlsx'
 ```
 

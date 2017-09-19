@@ -105,13 +105,12 @@ def get_conf_files():
 		]
 
 if __name__ == '__main__':
-	script_name=os.path.basename(sys.argv[0])
 	parser = argparse.ArgumentParser(description='Compile SISTR results from an IRIDA instance into a table.',
 		formatter_class=argparse.RawTextHelpFormatter,
 		epilog= "\nExample:"+
-			"\n\t" + script_name + " --all-projects --username irida-user --to-excel-file out.xlsx"+
+			"\n\t" + appname + " -a -u irida-user -o out.xlsx"+
 			"\n\t\tExports all SISTR results from all projects to a file 'out.xlsx'"+
-			"\n\n\t" + script_name + " --project 1 --project 2 --username irida-user --to-excel-file out.xlsx"+
+			"\n\n\t" + appname + " -p 1 -p 2 -u irida-user -o out.xlsx"+
 			"\n\t\tExports SISTR results form projects [1,2] to a file 'out.xlsx'")
 
 	parser.add_argument('--irida-url', action='store', dest='irida_url', help='The URL to the IRIDA instance.')
