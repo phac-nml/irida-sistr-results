@@ -1,22 +1,28 @@
 import csv
+import os
 import xlsxwriter
 import abc
 from datetime import datetime
 from operator import methodcaller
 
 from irida_sistr_results.sistr_info import SampleSistrInfo
+from irida_sistr_results.version import __version__
 
 class SistrResultsWriter(object):
 	"""Abstract class resonsible for writing SISTR results to a table format"""
 
-	def __init__(self,irida_url):
+	def __init__(self,irida_url,appname,username):
 		"""Construct a new SistrResultsWriter object corresponding to the passed irida_url
 
 		Args:
 		    irida_url: The URL to the IRIDA instance, used to insert URLs into the table
+		    appname: The application name.
+		    username: The name of the user generating these results.
 		"""
 		__metaclass__ = abc.ABCMeta
 		self.irida_url=irida_url
+		self.appname=appname
+		self.username=username
 		self.row=0
 		self.end_of_project=False
 
@@ -214,11 +220,13 @@ class SistrResultsWriter(object):
 	
 		self._formatting()
 
+		self._write_row(["Results generated from "+self.appname+" version="+__version__ + " connecting to IRIDA=" + self.irida_url + " as user=" + self.username + " on date=" + datetime.now().strftime('%Y-%m-%d %H:%M:%S')])
+
 class SistrCsvWriter(SistrResultsWriter):
 	"""An abstact writer used to create CSV/tab-delimited files"""
 
-	def __init__(self, irida_url, out_file):
-		super(SistrCsvWriter,self).__init__(irida_url)
+	def __init__(self, irida_url, appname, username, out_file):
+		super(SistrCsvWriter,self).__init__(irida_url, appname, username)
 		out_file_h = open(out_file, 'w')
 		self.writer = csv.writer(out_file_h, delimiter = "\t", quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
@@ -261,8 +269,8 @@ class SistrCsvWriter(SistrResultsWriter):
 class SistrCsvWriterShort(SistrCsvWriter):
 	"""Creates a shortened version of the results in a tab-delimited format"""
 
-	def __init__(self, irida_url, out_file):
-		super(SistrCsvWriterShort,self).__init__(irida_url,out_file)
+	def __init__(self, irida_url, appname, username, out_file):
+		super(SistrCsvWriterShort,self).__init__(irida_url,appname,username,out_file)
 
 	def _get_header_list(self):
 		return [
@@ -309,8 +317,8 @@ class SistrCsvWriterShort(SistrCsvWriter):
 class SistrExcelWriter(SistrResultsWriter):
 	"""A writer object for writing SISTR results to an excel spreadsheet"""
 
-	def __init__(self, irida_url, out_file):
-		super(SistrExcelWriter, self).__init__(irida_url)
+	def __init__(self, irida_url, appname, username, out_file):
+		super(SistrExcelWriter, self).__init__(irida_url, appname, username)
 		self.workbook = xlsxwriter.Workbook(out_file, {'default_date_format': 'yyyy/mm/dd'})
 		self.worksheet = self.workbook.add_worksheet()
 		self.index_of_cgmlst_percent = self._get_header_list().index('cgMLST Percent Matching')

@@ -72,13 +72,13 @@ def main(irida_url,client_id,client_secret,username,password,verbose,projects,ta
 	logger.info("MISSING: "+str(missing_sample_results))
 
 	if tabular_file is not None:
-		writer=SistrCsvWriter(irida_url,tabular_file)
+		writer=SistrCsvWriter(irida_url, appname, username, tabular_file)
 		writer.write(sistr_list)
 		writer.close()
 		logger.info("Wrote results to file " + tabular_file)
 
 	if excel_file is not None:
-		writer=SistrExcelWriter(irida_url, excel_file)
+		writer=SistrExcelWriter(irida_url, appname, username, excel_file)
 		writer.write(sistr_list)
 		writer.close()
 		logger.info("Wrote results to file " + excel_file)
