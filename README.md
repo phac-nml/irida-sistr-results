@@ -1,6 +1,6 @@
 # IRIDA SISTR Results
 
-The IRIDA SISTR Results application enables the export of [SISTR][sistr-web] results that were run through [IRIDA][irida] (via the [sistr-cmd][sistr-cmd] application) to a spreadsheet.
+The IRIDA SISTR Results application enables the export of [SISTR][sistr-web] results that were run through [IRIDA][irida] (via the [sistr-cmd][sistr-cmd] application) to a spreadsheet. See the [IRIDA SISTR Pipeline][irida-sistr-pipeline] documentation for more details on the presentation of SISTR results in IRIDA.
 
 # Quick Usage
 
@@ -10,7 +10,7 @@ To export SISTR results from IRIDA to a spreadsheet, please run the following:
 irida-sistr-results.py -p 1 -p 2 -u irida-user -o out.xlsx
 ```
 
-This will log into the configured IRIDA instance using the username `irida-user` and export SISTR results for the projects with IDs 1 and 2 to a file `out.xlsx`.  See the [IRIDA Projects Documentation][irida-projects] for more details on projects.
+This will log into the configured IRIDA instance using the username `irida-user` and export SISTR results for the projects with IDs 1 and 2 to a file `out.xlsx`.  See the [IRIDA Projects][irida-projects] documentation for more details on projects.
 
 Alternatively, instead of specifying individual projects you may use `-a` to export all projects.
 
@@ -130,6 +130,7 @@ specific language governing permissions and limitations under the License.
 [irida]: https://irida.ca
 [sistr-cmd]: https://github.com/peterk87/sistr_cmd
 [irida-projects]: https://irida.corefacility.ca/documentation/user/user/project/
+[irida-sistr-pipeline]: https://irida.corefacility.ca/documentation/user/user/sistr/
 [irida-client]: http://irida.corefacility.ca/documentation/user/administrator/#managing-system-clients
 [python-3]: https://www.python.org/
 [miniconda]: https://conda.io/miniconda.html
