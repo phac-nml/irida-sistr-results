@@ -32,7 +32,7 @@ In the case of multiple SISTR results per sample, IRIDA will load up that SISTR 
 If the connection details to the IRIDA instance have not already been configured, then you may run this command as:
 
 ```bash
-irida-sistr-results.py --irida-url [http://irida-url] --client-id [id] --client-secret [secreet] -p 1 -p 2 -u irida-user -o out.xlsx
+irida-sistr-results.py --irida-url [http://irida-url] --client-id [id] --client-secret [secret] -p 1 -p 2 -u irida-user -o out.xlsx
 ```
 
 The connection details correspond to the details for an [IRIDA Client][irida-client] which you will need to have been provied.
@@ -42,7 +42,7 @@ The connection details correspond to the details for an [IRIDA Client][irida-cli
 To get IRIDA SISTR Results, please run:
 
 ```bash
-git clone https://irida.corefacility.ca/irida/irida-sistr-results.git
+git clone https://github.com/phac-nml/irida-sistr-results.git
 cd irida-sistr-results
 ```
 
