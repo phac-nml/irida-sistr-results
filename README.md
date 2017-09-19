@@ -10,7 +10,7 @@ To export SISTR results from IRIDA to a spreadsheet, please run the following:
 irida-sistr-results.py -p 1 -p 2 -u irida-user -o out.xlsx
 ```
 
-This will log into the configured IRIDA instance using the username `irida-user` and export SISTR results for project 1 and 2 to a file `out.xlsx`.
+This will log into the configured IRIDA instance using the username `irida-user` and export SISTR results for the projects with IDs 1 and 2 to a file `out.xlsx`.  See the [IRIDA Projects Documentation][irida-projects] for more details on projects.
 
 Alternatively, instead of specifying individual projects you may use `-a` to export all projects.
 
@@ -129,6 +129,7 @@ specific language governing permissions and limitations under the License.
 [sistr-web]: http://lfz.corefacility.ca/sistr-app/
 [irida]: https://irida.ca
 [sistr-cmd]: https://github.com/peterk87/sistr_cmd
+[irida-projects]: https://irida.corefacility.ca/documentation/user/user/project/
 [irida-client]: http://irida.corefacility.ca/documentation/user/administrator/#managing-system-clients
 [python-3]: https://www.python.org/
 [miniconda]: https://conda.io/miniconda.html
