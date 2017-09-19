@@ -10,7 +10,15 @@ To export SISTR results from IRIDA to a spreadsheet, please run the following:
 irida-sistr-results.py -p 1 -p 2 -u irida-user -o out.xlsx
 ```
 
-This will log into the configured IRIDA instance using the username `irida-user` and export SISTR results for project 1 and 2 to a file `out.xlsx` which will look like the following:
+This will log into the configured IRIDA instance using the username `irida-user` and export SISTR results for project 1 and 2 to a file `out.xlsx`.
+
+Alternatively, instead of specifying individual projects you may use `-a` to export all projects.
+
+```bash
+irida-sistr-results.py -a -u irida-user -o out.xlsx
+```
+
+The exported file `out.xlsx` will look like the following:
 
 ![sistr-results-example.png][]
 
@@ -18,11 +26,6 @@ This will list each sample in the given projects, as well as the associated SIST
 
 In the case of multiple SISTR results per sample, IRIDA will load up that SISTR result which has a status of `PASS` that was run most recently for a particular sample.  To disable this behavior, please use `--exclude-user-existing-results`.
 
-Alternatively, instead of specifying individual projects you may use `-a` to export all projects.
-
-```bash
-irida-sistr-results.py -a -u irida-user -o out.xlsx
-```
 
 ## Specify connection details
 
