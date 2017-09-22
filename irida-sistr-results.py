@@ -36,10 +36,10 @@ def main(irida_url,client_id,client_secret,username,password,verbose,projects,ta
 	irida_results = IridaSistrResults(irida_api,not exclude_user_results,not exclude_user_existing_results)
 	
 	if all_projects:
-		logger.info("Getting results for all projects in IRIDA")
+		logger.info("Getting results for all projects in IRIDA. This may take a while.")
 		sistr_list = irida_results.get_sistr_results_all_projects()
 	else:
-		logger.info("Getting results for projects: " + str(projects))
+		logger.info("Getting results for projects: " + str(projects)+". This may take a while.")
 		sistr_list = irida_results.get_sistr_results_from_projects(projects)
 
 	total_sample_results=0
@@ -65,7 +65,7 @@ def main(irida_url,client_id,client_secret,username,password,verbose,projects,ta
 
 	proj_string = 'projects' if (total_projects > 1) else 'project'
 	logger.info("Done getting SISTR results\n")
-	logger.info("Examined "+str(total_sample_results)+" samples in "+str(total_projects) + ' ' + proj_string + " with statuses of")
+	logger.info("Examined "+str(total_sample_results)+" samples in "+str(total_projects) + ' ' + proj_string + " with status")
 	logger.info("PASS:    "+str(pass_sample_results))
 	logger.info("WARN:    "+str(warn_sample_results))
 	logger.info("FAIL:    "+str(fail_sample_results))
@@ -179,7 +179,7 @@ if __name__ == '__main__':
 			raise Exception("No --project or --all-projects parameter found.")
 
 		if arg_dict['password'] is None:
-			arg_dict['password']=getpass.getpass('Enter password for "'+arg_dict['username']+'":')
+			arg_dict['password']=getpass.getpass('Enter password for user="'+arg_dict['username']+'" on IRIDA="'+arg_dict['irida_url']+'":')
 	except Exception as e:
 		logging.error(e.value)
 		parser.print_help()
