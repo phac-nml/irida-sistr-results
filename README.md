@@ -52,7 +52,7 @@ cd irida-sistr-results
 
 ## Dependencies
 
-1. IRIDA `0.18.3`
+1. IRIDA `>=0.18.3`
 
     IRIDA SISTR Results requires an IRIDA version of at least `0.18.3` to work properly.  Please see the IRIDA [GitHub][irida-github-release] page for more details on releases.
 
