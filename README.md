@@ -37,6 +37,10 @@ irida-sistr-results.py --irida-url [http://irida-url] --client-id [id] --client-
 
 The connection details correspond to the details for an [IRIDA Client][irida-client] which you will need to have been provied.
 
+## Include MISSING results
+
+To include results for **MISSING** samples you must re-run the data for these results in IRIDA and re-export the results to a table. To re-run in IRIDA please select the samples in question ([selecting samples by a text file][select-by-file] may be useful here) and resubmit these samples to the [SISTR Pipeline][irida-sistr-pipeline]. If you wish all users in the project to have access to these results, please make sure to [Share pipeline results with a project][share-results-project].
+
 # Installation
 
 To get IRIDA SISTR Results, please run:
@@ -48,19 +52,25 @@ cd irida-sistr-results
 
 ## Dependencies
 
-IRIDA SISTR Results requires [Python 3][python-3]. A quick method to get Python 3 is to use [Miniconda 3][miniconda] (or alternatively, use Miniconda 2 and create an environment for Python 3 with run `conda create --name python-3 python=3; source activate python3`.
+1. IRIDA `0.18.3`
 
-Once the correct Python is installed, you may install the rest of the dependencies with:
+   IRIDA SISTR Results requires an IRIDA version of at least `0.18.3` to work properly.  Please see the IRIDA [GitHub][irida-github-release] page for more details on releases.
 
-```bash
-pip install -r requirements.txt
-```
+2. Python dependencies
+
+   IRIDA SISTR Results requires [Python 3][python-3]. A quick method to get Python 3 is to use [Miniconda 3][miniconda] (or alternatively, use Miniconda 2 and create an environment for Python 3 with run `conda create --name python-3 python=3; source activate python3`).
+
+   Once the correct Python is installed, you may install the rest of the dependencies with:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 ## Configuration
 
 Instead of providing all the configuration details on the command line, they can be specified in a configuration file.  This file can be placed either in `irida-sistr-results/conf/config.ini` or `~/.local/share/irida-sistr-results/config.ini`.
 
-To quickly set up configuration, please run `cp conf/config.ini.example conf/config.ini` and fill in the information within the [config.ini][config] file.
+To quickly set up configuration, please run `cp conf/config.ini.example conf/config.ini` and fill in the information within the [config.ini][config] file (the `url`, `client_id`, and `client_secret` connection details).
 
 # Usage
 
@@ -136,3 +146,6 @@ specific language governing permissions and limitations under the License.
 [miniconda]: https://conda.io/miniconda.html
 [config]: conf/config.ini.example
 [sistr-results-example.png]: images/sistr-results-example.png
+[select-by-file]: https://irida.corefacility.ca/documentation/user/user/samples/#filtering-and-selecting-by-file
+[share-results-project]: https://irida.corefacility.ca/documentation/user/user/pipelines/#sharing-pipeline-results
+[irida-github-release]: https://github.com/phac-nml/irida/releases
