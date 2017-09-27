@@ -53,16 +53,18 @@ cd irida-sistr-results
 ## Dependencies
 
 1. IRIDA `0.18.3`
-   IRIDA SISTR Results requires an IRIDA version of at least `0.18.3` to work properly.  Please see the IRIDA [GitHub][irida-github-release] page for more details on releases.
+
+    IRIDA SISTR Results requires an IRIDA version of at least `0.18.3` to work properly.  Please see the IRIDA [GitHub][irida-github-release] page for more details on releases.
 
 2. Python dependencies
-   IRIDA SISTR Results requires [Python 3][python-3]. A quick method to get Python 3 is to use [Miniconda 3][miniconda] (or alternatively, use Miniconda 2 and create an environment for Python 3 with run `conda create --name python-3 python=3; source activate python3`).
 
-   Once the correct Python is installed, you may install the rest of the dependencies with:
+    IRIDA SISTR Results requires [Python 3][python-3]. A quick method to get Python 3 is to use [Miniconda 3][miniconda] (or alternatively, use Miniconda 2 and create an environment for Python 3 with run `conda create --name python-3 python=3; source activate python3`).
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+    Once the correct Python is installed, you may install the rest of the dependencies with:
+
+    ```bash
+    pip install -r requirements.txt
+    ```
 
 ## Configuration
 
