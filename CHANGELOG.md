@@ -1,3 +1,7 @@
+# Version 0.3
+
+* Added ability to set a config file using `--config`.
+
 # Version 0.2
 
 * Display URL of IRIDA instance and updated some text on the screen.
