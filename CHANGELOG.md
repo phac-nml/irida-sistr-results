@@ -2,6 +2,7 @@
 
 * Added ability to set a config file using `--config`.
 * Fixed broken loading of configuration file located in `~/.local/share/irida-sistr-results/config.ini`.
+* Other small error message fixes.
 
 # Version 0.2
 
