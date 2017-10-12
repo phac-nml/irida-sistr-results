@@ -1,10 +1,12 @@
-# This is an example configuration file for the irida-sistr-results.py software. All information here can be set directly on the command-line, but this file provides a method to set default values. You may copy this file to `[irida-sistr-results-dir]/conf/config.ini` or to `~/.local/share/irida-sistr-results/config.ini` and modify the values.
+## This is an example configuration file for the irida-sistr-results.py software. All information here can be set directly on the command-line, but this file provides a method to set default values. You may copy this file to `[irida-sistr-results-dir]/conf/config.ini` or to `~/.local/share/irida-sistr-results/config.ini` and modify the values.
 
-# Connection details for the IRIDA API. Please see https://irida.corefacility.ca/documentation/user/administrator/#managing-system-clients for more information.
+## Connection details for the IRIDA API. Please see https://irida.corefacility.ca/documentation/user/administrator/#managing-system-clients for more information.
 [irida]
 #url=http://localhost
 #client_id=client
 #client_secret=secret
+
+## Uncomment to set a default user for logging into IRIDA. Leave commented out to force usage of '-u username' command-line option when running software.
 #username=user
 
 ## Timeout limit (in seconds) for an individual connection to IRIDA. Please increase if requests are taking too long.
