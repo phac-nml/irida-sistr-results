@@ -111,6 +111,8 @@ optional arguments:
                         If including user results, do not replace existing SISTR analysis that were automatically generated with user-run SISTR results.
   -T TIMEOUT, --connection-timeout TIMEOUT
                         Connection timeout when getting results from IRIDA.
+  -c CONFIG, --config CONFIG
+                        Configuration file for IRIDA (overrides values in ['conf/config.ini', '~/.local/share/irida-sistr-results/config.ini'])
   -V, --version         show program's version number and exit
 
 Example:
