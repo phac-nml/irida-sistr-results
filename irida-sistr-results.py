@@ -168,27 +168,27 @@ if __name__ == '__main__':
 			if 'url' in conf_i:
 				arg_dict['irida_url'] = conf_i['url']
 			else:
-				raise Exception("Must set --irida-url or irida.url in config file")
+				raise Exception("Must set --irida-url or irida.url in config file ("+str(get_conf_files())+')')
 		if (arg_dict['client_id'] is None):
 			if 'client_id' in conf_i:
 				arg_dict['client_id'] = conf_i['client_id']
 			else:
-				raise Exception("Must set --client-id or irida.client_id in config file")
+				raise Exception("Must set --client-id or irida.client_id in config file ("+str(get_conf_files())+')')
 	
 		if (arg_dict['client_secret'] is None):
 			if 'client_secret' in conf_i:
 				arg_dict['client_secret'] = conf_i['client_secret']
 			else:
-				raise Exception("Must set --client-secret or irida.client_secret in config file")
+				raise Exception("Must set --client-secret or irida.client_secret in config file ("+str(get_conf_files())+')')
 	
 		if (arg_dict['username'] is None):
 			if 'username' in conf_i:
 				arg_dict['username'] = conf_i['username']
 			else:
-				raise Exception("Must set --username or irida.username in config file")
+				raise Exception("Must set --username or irida.username in config file ("+str(get_conf_files())+')')
 
 		if (arg_dict['timeout'] is None):
-			if (conf_i['timeout'] is not None):
+			if ('timeout' in conf_i and conf_i['timeout'] is not None):
 				arg_dict['timeout'] = int(conf_i['timeout'])
 			else:
 				arg_dict['timeout'] = 600
@@ -202,7 +202,7 @@ if __name__ == '__main__':
 			raise Exception("No --project or --all-projects parameter found.")
 
 		if arg_dict['password'] is None:
-			arg_dict['password']=getpass.getpass('Enter password for user="'+arg_dict['username']+'" on IRIDA="'+arg_dict['irida_url']+'":')
+			arg_dict['password']=getpass.getpass('Enter password for user="'+arg_dict['username']+'" on IRIDA="'+arg_dict['irida_url']+'": ')
 	except Exception as e:
 		logging.error(e)
 		sys.exit(1)
