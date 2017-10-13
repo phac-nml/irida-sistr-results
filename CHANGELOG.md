@@ -1,3 +1,7 @@
+# Version 0.3.1
+
+* Fixed bug where a user has access to a shared analyses to a project but not access to the samples, causing a failure for all results.
+
 # Version 0.3
 
 * Added ability to set a config file using `--config`.
