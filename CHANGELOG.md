@@ -1,6 +1,7 @@
 # Version 0.3.1
 
 * Fixed bug where a user has access to a shared analyses to a project but not access to the samples, causing a failure for all results.
+* Removed printing of JSON reponses on use of `--verbose` flag.
 
 # Version 0.3
 

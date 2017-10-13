@@ -4,6 +4,8 @@ from requests.exceptions import HTTPError
 
 from irida_sistr_results.sistr_info import SampleSistrInfo
 
+LOGLEVEL_TRACE=5
+
 logger=logging.getLogger("irida-api")
 
 class IridaAPI(object):
@@ -31,7 +33,7 @@ class IridaAPI(object):
 		return False
 
 	def _log_json(self,json_obj):
-		logger.debug(json.dumps(json_obj, sort_keys=True, separators=(',',':'), indent=4))
+		logger.log(LOGLEVEL_TRACE,json.dumps(json_obj, sort_keys=True, separators=(',',':'), indent=4))
 
 	def _get_sistr_predictions(self, sistr_analysis_href):
 		sistr_pred_json=None

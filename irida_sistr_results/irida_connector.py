@@ -3,6 +3,8 @@ import logging
 from rauth import OAuth2Service
 from urllib.parse import urlsplit, urljoin
 
+LOGLEVEL_TRACE=5
+
 logger=logging.getLogger("irida_connector")
 
 class IridaConnector(object):
@@ -99,4 +101,4 @@ class IridaConnector(object):
 		return self.session.get(path, headers={'Accept': 'text/plain'}, timeout=self._timeout)
 
 	def _log_json(self,json_obj):
-		logger.debug(json.dumps(json_obj, sort_keys=True, separators=(',',':'), indent=4))
+		logger.log(LOGLEVEL_TRACE,json.dumps(json_obj, sort_keys=True, separators=(',',':'), indent=4))

@@ -47,7 +47,7 @@ class IridaSistrResults(object):
 
 	def _get_sistr_results(self,projects):
 		for p in projects:
-			logger.debug("Working on project " + str(p))
+			logger.debug("Working on project [" + p['identifier']+ ', ' + p['name'] + ']')
 			self._load_sistr_results_for_project(p)
 
 		if (self.include_user_results):
@@ -71,12 +71,12 @@ class IridaSistrResults(object):
 							sistr_results_project[sample_id] = result
 						elif (sistr_results_project[sample_id].get_submission_created_date() < result.get_submission_created_date()):
 							if (self.update_existing_with_user_results):
-								logger.info(self._result_to_sample_log_string(sistr_results_project[sample_id], result, "older")+" Updating.")
+								logger.debug(self._result_to_sample_log_string(sistr_results_project[sample_id], result, "older")+" Updating.")
 								sistr_results_project[sample_id] = result
 							else:
-								logger.info("Found result for sample="+result.get_sample_name() + ". Will not replace with exisiting result.")
+								logger.debug("Found result for sample="+result.get_sample_name() + ". Will not replace with exisiting result.")
 						else:
-							logger.info(self._result_to_sample_log_string(sistr_results_project[sample_id], result, "newer")+" Not updating.")
+							logger.debug(self._result_to_sample_log_string(sistr_results_project[sample_id], result, "newer")+" Not updating.")
 
 	def _load_sistr_results_for_project(self,project):
 		project_id=project['identifier']
