@@ -188,7 +188,7 @@ class IridaAPI(object):
 				else:
 					logger.debug('Skipping incompleted sistr submission [id='+sistr['identifier']+']')
 			except HTTPError as e:
-				logger.error('Could not read information for SISTR analysis submission [id='+sistr['identfier']+', name='+sistr['name']+'] ignoring these results. Error: '+str(e))
+				logger.error('Could not read information for SISTR analysis submission '+str(sistr)+ ', ignoring these results. Error: '+str(e))
 
 		return sistr_analysis_list
 
