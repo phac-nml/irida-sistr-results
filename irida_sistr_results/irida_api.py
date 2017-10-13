@@ -1,7 +1,10 @@
 import logging
 import json
+from requests.exceptions import HTTPError
 
 from irida_sistr_results.sistr_info import SampleSistrInfo
+
+LOGLEVEL_TRACE=5
 
 logger=logging.getLogger("irida-api")
 
@@ -30,7 +33,7 @@ class IridaAPI(object):
 		return False
 
 	def _log_json(self,json_obj):
-		logger.debug(json.dumps(json_obj, sort_keys=True, separators=(',',':'), indent=4))
+		logger.log(LOGLEVEL_TRACE,json.dumps(json_obj, sort_keys=True, separators=(',',':'), indent=4))
 
 	def _get_sistr_predictions(self, sistr_analysis_href):
 		sistr_pred_json=None
@@ -179,10 +182,13 @@ class IridaAPI(object):
 		
 		sistr_analysis_list=[]
 		for sistr in sistr_submissions_for_user:
-			if (sistr['analysisState'] == 'COMPLETED'):
-				sistr_analysis_list.append(self.get_sistr_info_from_submission(sistr))
-			else:
-				logger.debug('Skipping incompleted sistr submission [id='+sistr['identifier']+']')
+			try:
+				if (sistr['analysisState'] == 'COMPLETED'):
+					sistr_analysis_list.append(self.get_sistr_info_from_submission(sistr))
+				else:
+					logger.debug('Skipping incompleted sistr submission [id='+sistr['identifier']+']')
+			except HTTPError as e:
+				logger.error('Could not read information for SISTR analysis submission '+str(sistr)+ ', ignoring these results. Error: '+str(e))
 
 		return sistr_analysis_list
 
