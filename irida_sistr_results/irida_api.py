@@ -3,6 +3,7 @@ import json
 from requests.exceptions import HTTPError
 
 from irida_sistr_results.sistr_info import SampleSistrInfo
+from irida_sistr_results.SistrResultsException import SistrResultsException
 
 LOGLEVEL_TRACE=5
 
@@ -42,10 +43,13 @@ class IridaAPI(object):
 	
 		sistr_href=self._get_rel_from_links('outputFile/sistr-predictions', analysis['links'])
 		sistr_pred=self.irida_connector.get_file(sistr_href)
-		sistr_pred_json=sistr_pred.json()
+		try:
+			sistr_pred_json=sistr_pred.json()
+		except json.decoder.JSONDecodeError as e:
+			raise SistrResultsException("Error parsing JSON") from e
 	
 		if (sistr_pred_json is None):
-			raise Exception("Could not get SISTR predictions for sistr " + sistr_analysis_href)
+			raise SistrResultsException("Could not get SISTR predictions for sistr " + sistr_analysis_href)
 
 		self._log_json(sistr_pred_json)
 	
@@ -187,7 +191,7 @@ class IridaAPI(object):
 					sistr_analysis_list.append(self.get_sistr_info_from_submission(sistr))
 				else:
 					logger.debug('Skipping incompleted sistr submission [id='+sistr['identifier']+']')
-			except HTTPError as e:
+			except (HTTPError, SistrResultsException) as e:
 				logger.error('Could not read information for SISTR analysis submission '+str(sistr)+ ', ignoring these results. Error: '+str(e))
 
 		return sistr_analysis_list
