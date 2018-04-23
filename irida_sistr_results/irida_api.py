@@ -116,7 +116,7 @@ class IridaAPI(object):
 						sistr=self.irida_connector.get(sistr_rel)
 						
 						if (sistr['analysisState'] != 'COMPLETED'):
-							logger.warning("SISTR results associated with sample="+sample['sampleName']+" are in state="+sistr['analysisState']+" and will not be included in table")
+							logger.warning("Skipping automated SISTR results associated with sample="+sample['sampleName']+" as state is not 'COMPLETED'.")
 							if sistr_info is None:
 								sistr_info = SampleSistrInfo({'sample': sample,
 									'paired_files': sequencing_object,
