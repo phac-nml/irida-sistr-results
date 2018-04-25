@@ -145,7 +145,7 @@ if __name__ == '__main__':
 	arg_dict = vars(args)
 
 	if (arg_dict['verbose']):
-		logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
+		logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(module)s.%(funcName)s,%(lineno)s: %(message)s')
 	else:
 		logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
 
