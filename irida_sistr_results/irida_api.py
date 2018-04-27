@@ -196,3 +196,32 @@ class IridaAPI(object):
 
 		return sistr_analysis_list
 
+	def get_sistr_submissions_shared_to_project(self, project_id):
+		"""
+		Gets all SISTR results that were shared to a project.
+		:param project_id: The project identifier.
+		:return: A list of all SISTR results shared to the project.
+		"""
+		sistr_submissions_for_project = self.irida_connector.get_resources('/api/projects/'+str(project_id)+'/analyses/sistr')
+
+		sistr_analysis_list = []
+		for sistr in sistr_submissions_for_project:
+			try:
+				if (sistr['analysisState'] == 'COMPLETED'):
+					sistr_analysis = self._get_sistr_submission(sistr['identifier'])
+					sistr_analysis_list.append(self.get_sistr_info_from_submission(sistr_analysis))
+				else:
+					logger.debug('Skipping incompleted sistr submission [id=' + sistr['identifier'] + ']')
+			except (HTTPError, SistrResultsException) as e:
+				logger.error('Could not read information for SISTR analysis submission ' + str(
+					sistr) + ', ignoring these results. Error: ' + str(e))
+
+		return sistr_analysis_list
+
+	def _get_sistr_submission(self, id):
+		"""
+		Gets the particular AnalysisSubmission for the given SISTR analysis id.
+		:param id: The SISTR analysis id.
+		:return: The AnalysisSubmission data for the SISTR id.
+		"""
+		return self.irida_connector.get('/api/analysisSubmissions/'+str(id))
