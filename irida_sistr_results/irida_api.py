@@ -120,7 +120,7 @@ class IridaAPI(object):
 						sistr=self.irida_connector.get(sistr_rel)
 						
 						if (sistr['analysisState'] != 'COMPLETED'):
-							logger.warning("Skipping automated SISTR results associated with sample="+sample['sampleName']+" as state is not 'COMPLETED'.")
+							logger.debug("Skipping automated SISTR results associated with sample="+sample['sampleName']+" as state is not 'COMPLETED'.")
 							if sistr_info is None:
 								sistr_info = SampleSistrInfo({'sample': sample,
 									'paired_files': sequencing_object,
@@ -192,7 +192,7 @@ class IridaAPI(object):
 				else:
 					logger.debug('Skipping incompleted sistr submission [id='+sistr['identifier']+']')
 			except (HTTPError, SistrResultsException) as e:
-				logger.error('Could not read information for SISTR analysis submission '+str(sistr)+ ', ignoring these results. Error: '+str(e))
+				logger.warning('Could not read information for SISTR analysis submission id='+str(sistr['identifier'])+ ', name='+str(sistr['name']) + ', ignoring these results. '+str(e))
 
 		return sistr_analysis_list
 
@@ -213,8 +213,8 @@ class IridaAPI(object):
 				else:
 					logger.debug('Skipping incompleted sistr submission [id=' + sistr['identifier'] + ']')
 			except (HTTPError, SistrResultsException) as e:
-				logger.error('Could not read information for SISTR analysis submission ' + str(
-					sistr) + ', ignoring these results. Error: ' + str(e))
+				logger.warning('Could not read information for SISTR analysis submission id=' + str(
+					sistr['identifier']) + ', name=' + str(sistr['name']) + ', ignoring these results. ' + str(e))
 
 		return sistr_analysis_list
 
