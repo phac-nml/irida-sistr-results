@@ -3,6 +3,7 @@ import json
 from requests.exceptions import HTTPError
 
 from irida_sistr_results.sistr_info import SampleSistrInfo
+from irida_sistr_results.SistrResultsException import SistrResultsException
 
 LOGLEVEL_TRACE=5
 
@@ -42,10 +43,13 @@ class IridaAPI(object):
 	
 		sistr_href=self._get_rel_from_links('outputFile/sistr-predictions', analysis['links'])
 		sistr_pred=self.irida_connector.get_file(sistr_href)
-		sistr_pred_json=sistr_pred.json()
+		try:
+			sistr_pred_json=sistr_pred.json()
+		except json.decoder.JSONDecodeError as e:
+			raise SistrResultsException("Error parsing JSON") from e
 	
 		if (sistr_pred_json is None):
-			raise Exception("Could not get SISTR predictions for sistr " + sistr_analysis_href)
+			raise SistrResultsException("Could not get SISTR predictions for sistr " + sistr_analysis_href)
 
 		self._log_json(sistr_pred_json)
 	
@@ -116,7 +120,7 @@ class IridaAPI(object):
 						sistr=self.irida_connector.get(sistr_rel)
 						
 						if (sistr['analysisState'] != 'COMPLETED'):
-							logger.warning("SISTR results associated with sample="+sample['sampleName']+" are in state="+sistr['analysisState']+" and will not be included in table")
+							logger.debug("Skipping automated SISTR results associated with sample="+sample['sampleName']+" as state is not 'COMPLETED'.")
 							if sistr_info is None:
 								sistr_info = SampleSistrInfo({'sample': sample,
 									'paired_files': sequencing_object,
@@ -187,8 +191,37 @@ class IridaAPI(object):
 					sistr_analysis_list.append(self.get_sistr_info_from_submission(sistr))
 				else:
 					logger.debug('Skipping incompleted sistr submission [id='+sistr['identifier']+']')
-			except HTTPError as e:
-				logger.error('Could not read information for SISTR analysis submission '+str(sistr)+ ', ignoring these results. Error: '+str(e))
+			except (HTTPError, SistrResultsException) as e:
+				logger.warning('Could not read information for SISTR analysis submission id='+str(sistr['identifier'])+ ', name='+str(sistr['name']) + ', ignoring these results. '+str(e))
 
 		return sistr_analysis_list
 
+	def get_sistr_submissions_shared_to_project(self, project_id):
+		"""
+		Gets all SISTR results that were shared to a project.
+		:param project_id: The project identifier.
+		:return: A list of all SISTR results shared to the project.
+		"""
+		sistr_submissions_for_project = self.irida_connector.get_resources('/api/projects/'+str(project_id)+'/analyses/sistr')
+
+		sistr_analysis_list = []
+		for sistr in sistr_submissions_for_project:
+			try:
+				if (sistr['analysisState'] == 'COMPLETED'):
+					sistr_analysis = self._get_sistr_submission(sistr['identifier'])
+					sistr_analysis_list.append(self.get_sistr_info_from_submission(sistr_analysis))
+				else:
+					logger.debug('Skipping incompleted sistr submission [id=' + sistr['identifier'] + ']')
+			except (HTTPError, SistrResultsException) as e:
+				logger.warning('Could not read information for SISTR analysis submission id=' + str(
+					sistr['identifier']) + ', name=' + str(sistr['name']) + ', ignoring these results. ' + str(e))
+
+		return sistr_analysis_list
+
+	def _get_sistr_submission(self, id):
+		"""
+		Gets the particular AnalysisSubmission for the given SISTR analysis id.
+		:param id: The SISTR analysis id.
+		:return: The AnalysisSubmission data for the SISTR id.
+		"""
+		return self.irida_connector.get('/api/analysisSubmissions/'+str(id))
