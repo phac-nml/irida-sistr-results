@@ -39,7 +39,7 @@ The connection details correspond to the details for an [IRIDA Client][irida-cli
 
 ## Include MISSING results
 
-To include results for **MISSING** samples you must re-run the data for these results in IRIDA and re-export the results to a table. To re-run in IRIDA please select the samples in question ([selecting samples by a text file][select-by-file] may be useful here) and resubmit these samples to the [SISTR Pipeline][irida-sistr-pipeline]. If you wish all users in the project to have access to these results, please make sure to [Share pipeline results with a project][share-results-project].
+To include results for **MISSING** samples you must re-run the data for these results in IRIDA and re-export the results to a table. To re-run in IRIDA please select the samples in question ([selecting samples by a text file][select-by-file] may be useful here) and resubmit these samples to the [SISTR Pipeline][irida-sistr-pipeline]. Please make sure to [Share pipeline results with a project][share-results-project], or you will not see the results.
 
 # Installation
 
@@ -80,9 +80,9 @@ usage: irida-sistr-results.py [-h] [--irida-url IRIDA_URL]
                               [--client-secret CLIENT_SECRET] [-u USERNAME]
                               [--password PASSWORD] [-v] [-p PROJECTS] [-a]
                               [--output-tab TABULAR_FILE] [-o EXCEL_FILE]
-                              [--exclude-user-results]
+                              [--include-user-results]
                               [--exclude-user-existing-results] [-T TIMEOUT]
-                              [-V]
+                              [-c CONFIG] [-V]
 
 Compile SISTR results from an IRIDA instance into a table.
 
@@ -116,11 +116,11 @@ optional arguments:
   -V, --version         show program's version number and exit
 
 Example:
-	irida-sistr-results.py -a -u irida-user -o out.xlsx
-		Exports all SISTR results from all projects to a file 'out.xlsx'
+        irida-sistr-results.py -a -u irida-user -o out.xlsx
+                Exports all SISTR results from all projects to a file 'out.xlsx'
 
-	irida-sistr-results.py -p 1 -p 2 -u irida-user -o out.xlsx
-		Exports SISTR results form projects [1,2] to a file 'out.xlsx'
+        irida-sistr-results.py -p 1 -p 2 -u irida-user -o out.xlsx
+                Exports SISTR results form projects [1,2] to a file 'out.xlsx'
 ```
 
 # Legal
