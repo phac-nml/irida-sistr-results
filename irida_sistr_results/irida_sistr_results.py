@@ -49,6 +49,7 @@ class IridaSistrResults(object):
 		for p in projects:
 			logger.debug("Working on project [" + p['identifier']+ ', ' + p['name'] + ']')
 			self._load_sistr_results_for_project(p)
+			self._load_sistr_results_shared_to_project(p['identifier'])
 
 		if (self.include_user_results):
 			self._load_sistr_results_from_user()
@@ -58,6 +59,10 @@ class IridaSistrResults(object):
 	def _load_sistr_results_from_user(self):
 		user_results=self.irida_api.get_sistr_submissions_for_user()
 		self._load_additional_sistr_results(user_results)
+
+	def _load_sistr_results_shared_to_project(self, project_id):
+		project_results=self.irida_api.get_sistr_submissions_shared_to_project(project_id)
+		self._load_additional_sistr_results(project_results)
 
 	def _load_additional_sistr_results(self,additional_results):
 		for result in additional_results:
