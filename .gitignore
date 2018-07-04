@@ -2,3 +2,4 @@
 *.xlsx
 *.swp
 conf/config.ini
+.idea
