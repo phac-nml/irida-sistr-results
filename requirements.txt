@@ -1,4 +1,0 @@
-rauth>=0.7.3
-urllib3>=1.21.1
-XlsxWriter>=0.9.8
-appdirs>=1.4.3
