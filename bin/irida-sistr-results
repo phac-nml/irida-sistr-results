@@ -18,11 +18,11 @@ from irida_sistr_results.version import __version__
 script_dir=os.path.dirname(os.path.realpath(__file__))
 appname=os.path.basename(__file__)
 
-example_conf_name="config.ini.example"
-example_conf_file=script_dir+"/conf/"+example_conf_name
+example_conf_file=os.path.join(script_dir,'..','etc','config.ini.example')
+conf_file = os.path.join(script_dir,'..','etc','config.ini')
 
 user_conf_dir=appdirs.user_data_dir(os.path.splitext(appname)[0])
-user_conf_file=user_conf_dir+'/config.ini'
+user_conf_file=os.path.join(user_conf_dir,'config.ini')
 
 logger=logging.getLogger("irida-sistr-results")
 
@@ -96,7 +96,7 @@ def setup_user_data_dir():
 def get_conf_files():
 	"""Gets a list of configuration file paths to attempt to read configuration values from."""
 	setup_user_data_dir()
-	return [script_dir+'/conf/config.ini',
+	return [conf_file,
 		user_conf_file
 		]
 
