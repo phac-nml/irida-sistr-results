@@ -96,6 +96,9 @@ class SampleSistrInfo(object):
 	def get_submission_identifier(self):
 		return self.sistr_info['submission']['identifier']
 
+	def get_submission_workflow_id(self):
+		return self.sistr_info['submission']['workflowId']
+
 	def get_submission_created_date(self):
 		return datetime.fromtimestamp(self.sistr_info['submission']['createdDate']/1000)
 
