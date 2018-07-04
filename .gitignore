@@ -2,4 +2,5 @@
 *.xlsx
 *.swp
 conf/config.ini
-.idea
+/.idea
+/irida_sistr_results.egg-info
