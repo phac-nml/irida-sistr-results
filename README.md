@@ -43,46 +43,53 @@ To include results for **MISSING** samples you must re-run the data for these re
 
 # Installation
 
-To get IRIDA SISTR Results, please run:
+## Bioconda
+
+The easiest way to get IRIDA SISTR Results is through [Bioconda][]:
+
+```
+conda install -c bioconda irida-sistr-results
+```
+
+## Latest code
+
+Alternatively, if you wish to install the latest code from GitHub, please run:
 
 ```bash
-git clone https://github.com/phac-nml/irida-sistr-results.git
-cd irida-sistr-results
+pip install git+https://github.com/phac-nml/irida-sistr-results
 ```
 
 ## Dependencies
 
-1. IRIDA `>=0.18.3`
+* Python 3
+* IRIDA `>=0.18.3`
 
     IRIDA SISTR Results requires an IRIDA version of at least `0.18.3` to work properly.  Please see the IRIDA [GitHub][irida-github-release] page for more details on releases.
 
-2. Python dependencies
-
-    IRIDA SISTR Results requires [Python 3][python-3]. A quick method to get Python 3 is to use [Miniconda 3][miniconda] (or alternatively, use Miniconda 2 and create an environment for Python 3 with run `conda create --name python-3 python=3; source activate python3`).
-
-    Once the correct Python is installed, you may install the rest of the dependencies with:
-
-    ```bash
-    pip install -r requirements.txt
-    ```
-
 ## Configuration
 
-Instead of providing all the configuration details on the command line, they can be specified in a configuration file.  This file can be placed either in `irida-sistr-results/conf/config.ini` or `~/.local/share/irida-sistr-results/config.ini`.
+Instead of providing all the configuration details on the command line, they can be specified in a configuration file.  This file can be placed in `~/.local/share/irida-sistr-results/config.ini`, or passed on the command-line (using `--config`).
 
-To quickly set up configuration, please run `cp conf/config.ini.example conf/config.ini` and fill in the information within the [config.ini][config] file (the `url`, `client_id`, and `client_secret` connection details).
+To quickly set up configuration, please run `irida-sistr-results.py` once to copy a template to `~/.local/share/irida-sistr-results/config.ini` and fill in the information within the [config.ini][config] file (the `url`, `client_id`, and `client_secret` connection details).
+
+To see a list of all locations where you can place the `config.ini` file, you may check the usage statement for the `-c, --config` information.  E.g.,
+
+```
+irida-sistr-results.py | grep '^ *-c' -A 1
+    Configuration file for IRIDA (overrides values in ['/path1/config.ini', '/path2/config.ini'])
+```
 
 # Usage
 
 ```
-usage: irida-sistr-results.py [-h] [--irida-url IRIDA_URL]
-                              [--client-id CLIENT_ID]
-                              [--client-secret CLIENT_SECRET] [-u USERNAME]
-                              [--password PASSWORD] [-v] [-p PROJECTS] [-a]
-                              [--output-tab TABULAR_FILE] [-o EXCEL_FILE]
-                              [--include-user-results]
-                              [--exclude-user-existing-results] [-T TIMEOUT]
-                              [-c CONFIG] [-V]
+usage: irida-sistr-results.py  [-h] [--irida-url IRIDA_URL]
+                               [--client-id CLIENT_ID]
+                               [--client-secret CLIENT_SECRET] [-u USERNAME]
+                               [--password PASSWORD] [-v] [-p PROJECTS] [-a]
+                               [--output-tab TABULAR_FILE] [-o EXCEL_FILE]
+                               [--include-user-results]
+                               [--exclude-user-existing-results] [-T TIMEOUT]
+                               [-c CONFIG] [-V]
 
 Compile SISTR results from an IRIDA instance into a table.
 
@@ -112,7 +119,7 @@ optional arguments:
   -T TIMEOUT, --connection-timeout TIMEOUT
                         Connection timeout when getting results from IRIDA.
   -c CONFIG, --config CONFIG
-                        Configuration file for IRIDA (overrides values in ['conf/config.ini', '~/.local/share/irida-sistr-results/config.ini'])
+                        Configuration file for IRIDA (overrides values in ['/path/to/config.ini', '~/.local/share/irida-sistr-results/config.ini'])
   -V, --version         show program's version number and exit
 
 Example:
@@ -140,13 +147,14 @@ specific language governing permissions and limitations under the License.
 
 [sistr-web]: http://lfz.corefacility.ca/sistr-app/
 [irida]: https://irida.ca
+[Bioconda]: https://bioconda.github.io/
 [sistr-cmd]: https://github.com/peterk87/sistr_cmd
 [irida-projects]: https://irida.corefacility.ca/documentation/user/user/project/
 [irida-sistr-pipeline]: https://irida.corefacility.ca/documentation/user/user/sistr/
 [irida-client]: http://irida.corefacility.ca/documentation/user/administrator/#managing-system-clients
 [python-3]: https://www.python.org/
 [miniconda]: https://conda.io/miniconda.html
-[config]: conf/config.ini.example
+[config]: irida_sistr_results/etc/config.ini.example
 [sistr-results-example.png]: images/sistr-results-example.png
 [select-by-file]: https://irida.corefacility.ca/documentation/user/user/samples/#filtering-and-selecting-by-file
 [share-results-project]: https://irida.corefacility.ca/documentation/user/user/pipelines/#sharing-pipeline-results
