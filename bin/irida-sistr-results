@@ -26,7 +26,7 @@ user_conf_file=os.path.join(user_conf_dir,'config.ini')
 
 logger=logging.getLogger("irida-sistr-results")
 
-def main(irida_url,client_id,client_secret,username,password,projects,tabular_file,excel_file,include_user_results,exclude_user_existing_results,all_projects,timeout):
+def main(irida_url,client_id,client_secret,username,password,verbose,projects,tabular_file,excel_file,include_user_results,exclude_user_existing_results,all_projects,timeout,config):
 	"""Main method connecting to IRIDA/writing SISTR results file."""
 	logging.info("Running "+appname+" version "+version.__version__)
 
