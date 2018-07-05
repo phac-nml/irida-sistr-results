@@ -6,19 +6,21 @@ logger=logging.getLogger("irida-sistr-results")
 class IridaSistrResults(object):
 	"""Class for constructing the top-level data structures mapping projects to lists of SISTR results."""
 
-	def __init__(self,irida_api,include_user_results,update_existing_with_user_results):
+	def __init__(self,irida_api,include_user_results,update_existing_with_user_results,sistr_workflow_id = None):
 		"""Creates a new IridaSistrResults object.
 
 		Args:
 		    irida_api:  The IridaAPI object for connecting to IRIDA.
 		    include_user_results:  Whether or not to include all user-accessible results (or just automated SISTR results).
 		    update_existing_with_user_results:  Whether or not to update existing results with newer results run by a user.
+		    sistr_workflow_id:	The SISTR workflow ID of results to include.
 
 		Returns:  A new IridaSistrResults object.
 		"""
 		self.irida_api=irida_api
 		self.include_user_results=include_user_results
 		self.update_existing_with_user_results=update_existing_with_user_results
+		self.sistr_workflow_id = sistr_workflow_id
 		self.sistr_results={}
 		self.sample_project={}
 
@@ -57,11 +59,11 @@ class IridaSistrResults(object):
 		return self.sistr_results
 
 	def _load_sistr_results_from_user(self):
-		user_results=self.irida_api.get_sistr_submissions_for_user()
+		user_results=self.irida_api.get_sistr_submissions_for_user(self.sistr_workflow_id)
 		self._load_additional_sistr_results(user_results)
 
 	def _load_sistr_results_shared_to_project(self, project_id):
-		project_results=self.irida_api.get_sistr_submissions_shared_to_project(project_id)
+		project_results=self.irida_api.get_sistr_submissions_shared_to_project(project_id, self.sistr_workflow_id)
 		self._load_additional_sistr_results(project_results)
 
 	def _load_additional_sistr_results(self,additional_results):
@@ -90,7 +92,7 @@ class IridaSistrResults(object):
 			raise Exception("Error: project " + str(project_id) + " already examined")
 		
 		self.sistr_results[project_id]={}
-		project_results=self.irida_api.get_sistr_results_for_project(project_id)
+		project_results=self.irida_api.get_sistr_results_for_project(project_id, self.sistr_workflow_id)
 
 		for result in project_results:
 			if result is None:
