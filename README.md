@@ -82,14 +82,14 @@ irida-sistr-results.py | grep '^ *-c' -A 1
 # Usage
 
 ```
-usage: irida-sistr-results.py  [-h] [--irida-url IRIDA_URL]
-                               [--client-id CLIENT_ID]
-                               [--client-secret CLIENT_SECRET] [-u USERNAME]
-                               [--password PASSWORD] [-v] [-p PROJECTS] [-a]
-                               [--output-tab TABULAR_FILE] [-o EXCEL_FILE]
-                               [--include-user-results]
-                               [--exclude-user-existing-results] [-T TIMEOUT]
-                               [-c CONFIG] [-V]
+usage: irida-sistr-results.py [-h] [--irida-url IRIDA_URL]
+                              [--client-id CLIENT_ID]
+                              [--client-secret CLIENT_SECRET] [-u USERNAME]
+                              [--password PASSWORD] [-v] [-p PROJECTS] [-a]
+                              [--output-tab TABULAR_FILE] [-o EXCEL_FILE]
+                              [--include-user-results]
+                              [--exclude-user-existing-results] [-T TIMEOUT]
+                              [-c CONFIG] [-V]
 
 Compile SISTR results from an IRIDA instance into a table.
 
