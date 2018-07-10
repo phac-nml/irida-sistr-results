@@ -12,23 +12,23 @@ import appdirs
 from irida_sistr_results.irida_connector import IridaConnector
 from irida_sistr_results.irida_api import IridaAPI
 from irida_sistr_results.irida_sistr_results import IridaSistrResults
-from irida_sistr_results.sistr_writer import SistrCsvWriter, SistrExcelWriter, SistrCsvWriterShort
-from irida_sistr_results.version import __version__
+from irida_sistr_results.sistr_writer import SistrCsvWriter, SistrExcelWriter
+from irida_sistr_results import version
 
-script_dir=os.path.dirname(os.path.realpath(__file__))
+conf_dir=os.path.join(os.path.dirname(os.path.realpath(version.__file__)), 'etc')
 appname=os.path.basename(__file__)
 
-example_conf_name="config.ini.example"
-example_conf_file=script_dir+"/conf/"+example_conf_name
+example_conf_file=os.path.join(conf_dir,'config.ini.example')
+conf_file = os.path.join(conf_dir,'config.ini')
 
 user_conf_dir=appdirs.user_data_dir(os.path.splitext(appname)[0])
-user_conf_file=user_conf_dir+'/config.ini'
+user_conf_file=os.path.join(user_conf_dir,'config.ini')
 
 logger=logging.getLogger("irida-sistr-results")
 
 def main(irida_url,client_id,client_secret,username,password,verbose,projects,tabular_file,excel_file,include_user_results,exclude_user_existing_results,all_projects,timeout,config):
 	"""Main method connecting to IRIDA/writing SISTR results file."""
-	logging.info("Running "+appname+" version "+__version__)
+	logging.info("Running "+appname+" version "+version.__version__)
 
 	connector = IridaConnector(client_id,client_secret,username,password,irida_url,timeout)
 	irida_api = IridaAPI(connector)
@@ -96,7 +96,7 @@ def setup_user_data_dir():
 def get_conf_files():
 	"""Gets a list of configuration file paths to attempt to read configuration values from."""
 	setup_user_data_dir()
-	return [script_dir+'/conf/config.ini',
+	return [conf_file,
 		user_conf_file
 		]
 
@@ -135,7 +135,7 @@ if __name__ == '__main__':
 	parser.add_argument('--exclude-user-existing-results', action='store_true', dest='exclude_user_existing_results', help='If including user results, do not replace existing SISTR analysis that were automatically generated with user-run SISTR results.')
 	parser.add_argument('-T', '--connection-timeout', action='store', dest='timeout', help='Connection timeout when getting results from IRIDA.')
 	parser.add_argument('-c', '--config', action='store', dest='config', help='Configuration file for IRIDA (overrides values in '+str(get_conf_files())+')')
-	parser.add_argument('-V', '--version', action='version', version='%(prog)s {}'.format(__version__))
+	parser.add_argument('-V', '--version', action='version', version='%(prog)s {}'.format(version.__version__))
 
 	if len(sys.argv)==1:
 		parser.print_help()
