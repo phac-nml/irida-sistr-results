@@ -95,7 +95,8 @@ class SistrResultsWriter(object):
 			'IRIDA File Pair Identifier',
 			'IRIDA Submission Identifier',
 			'IRIDA Analysis Date',
-			'IRIDA Workflow ID'
+			'IRIDA Workflow Version',
+			'IRIDA Workflow ID',
 		]
 
 	def _format_timestamp(self, timestamp):
@@ -147,6 +148,7 @@ class SistrResultsWriter(object):
 			result.get_paired_id(),
 			result.get_submission_identifier(),
 			result.get_submission_created_date(),
+			result.get_submission_workflow_version(),
 			result.get_submission_workflow_id(),
 		]
 
@@ -184,6 +186,7 @@ class SistrResultsWriter(object):
 			None,
 			result.get_sample_created_date(),
 			result.get_sample_id(),
+			None,
 			None,
 			None,
 			None,
@@ -267,6 +270,7 @@ class SistrCsvWriter(SistrResultsWriter):
 			result.get_paired_id(),
 			result.get_submission_identifier(),
 			result.get_submission_created_date(),
+			result.get_submission_workflow_version(),
 			result.get_submission_workflow_id(),
 		]
 
