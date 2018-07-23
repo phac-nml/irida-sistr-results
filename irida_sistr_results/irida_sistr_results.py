@@ -1,6 +1,6 @@
 import logging
 
-from irida_sistr_results.irida_sistr_workflow import workflow_version_to_id
+from irida_sistr_results.irida_sistr_workflow import IridaSistrWorkflow
 
 logger=logging.getLogger("irida-sistr-results")
 
@@ -21,7 +21,7 @@ class IridaSistrResults(object):
 		self.irida_api=irida_api
 		self.include_user_results=include_user_results
 		self.update_existing_with_user_results=update_existing_with_user_results
-		self.sistr_workflow_id = workflow_version_to_id(sistr_workflow_version)
+		self.sistr_workflow_id = IridaSistrWorkflow.workflow_version_to_id(sistr_workflow_version)
 		self.sistr_results={}
 		self.sample_project={}
 

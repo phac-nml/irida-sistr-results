@@ -14,6 +14,7 @@ from irida_sistr_results.irida_api import IridaAPI
 from irida_sistr_results.irida_sistr_results import IridaSistrResults
 from irida_sistr_results.sistr_writer import SistrCsvWriter, SistrExcelWriter
 from irida_sistr_results import version
+from irida_sistr_results.irida_sistr_workflow import IridaSistrWorkflow
 
 conf_dir=os.path.join(os.path.dirname(os.path.realpath(version.__file__)), 'etc')
 appname=os.path.basename(__file__)
@@ -119,7 +120,9 @@ if __name__ == '__main__':
 			"\n\t" + appname + " -a -u irida-user -o out.xlsx"+
 			"\n\t\tExports all SISTR results from all projects to a file 'out.xlsx'"+
 			"\n\n\t" + appname + " -p 1 -p 2 -u irida-user -o out.xlsx"+
-			"\n\t\tExports SISTR results form projects [1,2] to a file 'out.xlsx'")
+			"\n\t\tExports SISTR results form projects [1,2] to a file 'out.xlsx'" +
+			"\n\n\t" + appname + " -p 1 --workflow-version 0.3 -u irida-user -o out.xlsx" +
+			"\n\t\tExports only SISTR results from workflow version 0.3 form project [1]")
 
 	parser.add_argument('--irida-url', action='store', dest='irida_url', help='The URL to the IRIDA instance.')
 	parser.add_argument('--client-id', action='store', dest='client_id', help='The client id for an IRIDA instance.')
@@ -136,7 +139,7 @@ if __name__ == '__main__':
 	parser.add_argument('-T', '--connection-timeout', action='store', dest='timeout', help='Connection timeout when getting results from IRIDA.')
 	parser.add_argument('-c', '--config', action='store', dest='config', help='Configuration file for IRIDA (overrides values in '+str(get_conf_files())+')')
 	parser.add_argument('-V', '--version', action='version', version='%(prog)s {}'.format(version.__version__))
-	parser.add_argument('--workflow-version', action='store', dest='workflow_version', default=None, help="Only include results of this workflow version [all versions]")
+	parser.add_argument('--workflow-version', action='store', dest='workflow_version', default=None, help="Only include results of this workflow version {} [all versions]".format(IridaSistrWorkflow.all_workflow_versions()))
 
 	if len(sys.argv)==1:
 		parser.print_help()

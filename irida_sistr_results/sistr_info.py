@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from irida_sistr_results.irida_sistr_workflow import workflow_id_to_version
+from irida_sistr_results.irida_sistr_workflow import IridaSistrWorkflow
 
 class SampleSistrInfo(object):
 	"""Stores and provides access to SISTR/IRIDA information for a particular sample."""
@@ -102,7 +102,7 @@ class SampleSistrInfo(object):
 		return self.sistr_info['submission']['workflowId']
 
 	def get_submission_workflow_version(self):
-		return workflow_id_to_version(self.get_submission_workflow_id())
+		return IridaSistrWorkflow.workflow_id_to_version(self.get_submission_workflow_id())
 
 	def get_submission_created_date(self):
 		return datetime.fromtimestamp(self.sistr_info['submission']['createdDate']/1000)
