@@ -206,7 +206,7 @@ class IridaAPI(object):
 						logger.debug("Skipping sistr submission [id=%s, workflowId=%s]. workflowId != %s".format(
 							sistr['identifier'], sistr['workflowId'], sistr_workflow_id))
 				else:
-					logger.debug('Skipping incompleted sistr submission [id='+sistr['identifier']+']')
+					logger.debug('Skipping incompleted sistr submission [id=%s]', sistr['identifier'])
 			except (HTTPError, SistrResultsException) as e:
 				logger.warning('Could not read information for SISTR analysis submission id='+str(sistr['identifier'])+ ', name='+str(sistr['name']) + ', ignoring these results. '+str(e))
 
