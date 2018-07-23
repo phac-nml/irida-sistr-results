@@ -198,7 +198,6 @@ class IridaAPI(object):
 		sistr_analysis_list=[]
 		for sistr in sistr_submissions_for_user:
 			try:
-
 				if (sistr['analysisState'] == 'COMPLETED'):
 					if sistr_workflow_id is None or sistr_workflow_id == sistr['workflowId']:
 						sistr_analysis_list.append(self.get_sistr_info_from_submission(sistr))
@@ -231,7 +230,7 @@ class IridaAPI(object):
 					else:
 						logger.debug("Skipping sistr submission [id=%s, workflowId=%s]. workflowId != %s".format(sistr['identifier'], sistr['workflowId'], sistr_workflow_id))
 				else:
-					logger.debug('Skipping incompleted sistr submission [id=' + sistr['identifier'] + ']')
+					logger.debug('Skipping incompleted sistr submission [id=%s]', sistr['identifier'])
 			except (HTTPError, SistrResultsException) as e:
 				logger.warning('Could not read information for SISTR analysis submission id=' + str(
 					sistr['identifier']) + ', name=' + str(sistr['name']) + ', ignoring these results. ' + str(e))
