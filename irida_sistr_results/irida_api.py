@@ -109,49 +109,44 @@ class IridaAPI(object):
 			sample_pairs=self.irida_connector.get_resources('/api/samples/'+sample['identifier']+'/pairs')
 
 			if len(sample_pairs) == 0:
-				sistr_info = SampleSistrInfo({'sample': sample,
-						'has_results': False
-						})
+				sistr_info = SampleSistrInfo.create_empty_info(sample)
 			else:
 				sistr_info = None
 				for sequencing_object in sample_pairs:
 					if (self._has_rel_in_links('analysis/sistr', sequencing_object['links'])):
 						sistr_rel=self._get_rel_from_links('analysis/sistr', sequencing_object['links'])
-	
 						sistr=self.irida_connector.get(sistr_rel)
 						
-						if (sistr['analysisState'] != 'COMPLETED'):
-							logger.debug("Skipping automated SISTR results associated with sample="+sample['sampleName']+" as state is not 'COMPLETED'.")
-							if sistr_info is None:
-								sistr_info = SampleSistrInfo({'sample': sample,
-									'paired_files': sequencing_object,
-									'has_results': False
-									})
-						else:
-							if sistr_workflow_id is None or sistr_workflow_id == sistr['workflowId']:
-								sistr_info_curr=self.get_sistr_info_from_submission(sistr)
-								if (sistr_info is None):
-									sistr_info = sistr_info_curr
-								elif sistr_info_curr.get_qc_status() == 'PASS' and (not sistr_info.has_sistr_results() or sistr_info.get_qc_status() != 'PASS'):
-									sistr_info = sistr_info_curr
-								elif sistr_info_curr.get_qc_status() == 'PASS' and (sistr_info_curr.get_submission_created_date() > sistr_info.get_submission_created_date()):
-									sistr_info = sistr_info_curr
-							else:
-								sistr_info = SampleSistrInfo({'sample': sample,
-															  'paired_files': sequencing_object,
-															  'has_results': False
-															  })
-								logger.debug(
-									"Skipping sistr submission [id=%s, workflowId=%s]. workflowId != %s".format(
-										sistr['identifier'], sistr['workflowId'], sistr_workflow_id))
+						sistr_info = self._create_sample_sistr_info(sistr_workflow_id, sistr, sample, sequencing_object)
 					elif sistr_info is None:
-						sistr_info = SampleSistrInfo({'sample': sample,
-								'paired_files': sequencing_object,
-								'has_results': False
-								})
+						sistr_info = SampleSistrInfo.create_empty_info(sample, sequencing_object)
 
 			sistr_results.append(sistr_info)
 		return sistr_results
+
+	def _create_sample_sistr_info(self, workflow_id, sistr, sample, sequencing_object):
+		sistr_info = SampleSistrInfo.create_empty_info(sample, sequencing_object)
+
+		if (sistr['analysisState'] != 'COMPLETED'):
+			logger.debug("Skipping automated SISTR results associated with sample=" + sample[
+				'sampleName'] + " as state is not 'COMPLETED'.")
+		else:
+			if workflow_id is None or workflow_id == sistr['workflowId']:
+				sistr_info_curr = self.get_sistr_info_from_submission(sistr)
+				if (sistr_info is None):
+					sistr_info = sistr_info_curr
+				elif sistr_info_curr.get_qc_status() == 'PASS' and (
+						not sistr_info.has_sistr_results() or sistr_info.get_qc_status() != 'PASS'):
+					sistr_info = sistr_info_curr
+				elif sistr_info_curr.get_qc_status() == 'PASS' and (
+						sistr_info_curr.get_submission_created_date() > sistr_info.get_submission_created_date()):
+					sistr_info = sistr_info_curr
+			else:
+				logger.debug(
+					"Skipping sistr submission [id=%s, workflowId=%s]. workflowId != %s".format(
+						sistr['identifier'], sistr['workflowId'], workflow_id))
+
+		return sistr_info
 		
 	def get_sistr_info_from_submission(self, submission):
 		"""Gets the relevent SISTR information from an IRIDA SISTR AnalysisSubmission.

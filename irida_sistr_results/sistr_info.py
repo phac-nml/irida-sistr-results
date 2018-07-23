@@ -8,6 +8,17 @@ class SampleSistrInfo(object):
 	def __init__(self, sistr_info):
 		self.sistr_info = sistr_info
 
+	@classmethod
+	def create_empty_info(cls, sample, sequencing_object = None):
+		data = {'sample': sample,
+				'has_results': False
+		}
+
+		if sequencing_object is not None:
+			data['paired_files'] = sequencing_object
+
+		return cls(data)
+
 	def has_sistr_results(self):
 		return self.sistr_info['has_results']
 
