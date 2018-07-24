@@ -128,7 +128,7 @@ class IridaAPI(object):
 		return sistr_results
 
 	def _update_sample_sistr_info(self, curr_sistr_info, new_sistr_info, sistr_workflow_id):
-		if sistr_workflow_id is None or sistr_workflow_id == new_sistr_info['workflowId']:
+		if sistr_workflow_id is None or sistr_workflow_id == new_sistr_info.get_submission_workflow_id():
 			if not curr_sistr_info.has_sistr_results():
 				return new_sistr_info
 			elif new_sistr_info.get_qc_status() == 'PASS' and curr_sistr_info.get_qc_status() != 'PASS':
