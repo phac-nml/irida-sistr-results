@@ -115,13 +115,13 @@ class IridaAPI(object):
 					if (self._has_rel_in_links('analysis/sistr', sequencing_object['links'])):
 						sistr_rel=self._get_rel_from_links('analysis/sistr', sequencing_object['links'])
 						sistr=self.irida_connector.get(sistr_rel)
-						new_sistr_info = self.get_sistr_info_from_submission(sistr)
 
 						if (sistr['analysisState'] != 'COMPLETED'):
 							logger.debug(
 								"Skipping automated SISTR results associated with sample=%s as state is not 'COMPLETED'.",
-								new_sistr_info.get_sample_id())
+								sample['identifier'])
 						else:
+							new_sistr_info = self.get_sistr_info_from_submission(sistr)
 							sistr_info = self._update_sample_sistr_info(sistr_info, new_sistr_info, sistr_workflow_id)
 
 			sistr_results.append(sistr_info)
