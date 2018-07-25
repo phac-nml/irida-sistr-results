@@ -1,6 +1,9 @@
-class IridaSistrWorkflow:
-    """Functionality for conversion between workflow ids and versions."""
+"""
+Functionality for conversion between workflow ids and versions.
+"""
 
+
+class IridaSistrWorkflow:
     WORKFLOW_IDS = {
         '0.1': 'e559af58-a560-4bbd-997e-808bfbe026e2',
         '0.1.0': 'e559af58-a560-4bbd-997e-808bfbe026e2',
@@ -18,7 +21,7 @@ class IridaSistrWorkflow:
     }
 
     @classmethod
-    def workflow_id_to_version(cls,workflow_id):
+    def workflow_id_to_version(cls, workflow_id):
         """
         Converts an IRIDA workflow id to a version number.
         :param workflow_id: The workflow id.
@@ -27,7 +30,7 @@ class IridaSistrWorkflow:
         return cls.WORKFLOW_VERSIONS[workflow_id]
 
     @classmethod
-    def workflow_version_to_id(cls,workflow_version):
+    def workflow_version_to_id(cls, workflow_version):
         """
         Converts an IRIDA workflow version to an id.
         :param workflow_version: The workflow version.

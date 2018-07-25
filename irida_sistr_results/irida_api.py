@@ -74,12 +74,10 @@ class IridaAPI(object):
 			return sample
 	
 	def get_user_project(self,project_id):
-		"""Gets information on a particular IRIDA project
-
-		Args:
-		    project_id: The id of the project to search.
-
-		Returns:  The JSON results for the IRIDA project
+		"""
+		Gets information on a particular IRIDA project
+		:param project_id: The id of the project to search.
+		:return:  The JSON results for the IRIDA project
 		"""
 		return self.irida_connector.get('/api/projects/'+str(project_id))
 
@@ -91,15 +89,14 @@ class IridaAPI(object):
 		return self.irida_connector.get_resources('/api/projects')
 	
 	def get_sistr_results_for_project(self, project, sistr_workflow_id):
-		"""Gets information on all SISTR results in a project (that is, automated SISTR results).
-		   This is structured as a list of objects (on per sample) containing a SampleSistrInfo object if available and whether 
-		   or not these results are available for a sample (from keys 'has_results').
+		"""
+		Gets information on all SISTR results in a project (that is, automated SISTR results).
+		This is structured as a list of objects (on per sample) containing a SampleSistrInfo object if available and whether
+		or not these results are available for a sample (from keys 'has_results').
 
-		Args:
-		    :param project:  The project to search through.
-		    :param sistr_workflow_id: The SISTR workflow id, None for all workflow results.
-
-		Returns: A list of dictionaries containing SampleSistrInfo objects and/or indicators for missing results.
+		:param project:  The project to search through.
+		:param sistr_workflow_id: The SISTR workflow id, None for all workflow results.
+		:return: A list of dictionaries containing SampleSistrInfo objects and/or indicators for missing results.
 		"""
 		sistr_results=[]
 	
@@ -144,12 +141,11 @@ class IridaAPI(object):
 		return curr_sistr_info
 		
 	def get_sistr_info_from_submission(self, submission):
-		"""Gets the relevent SISTR information from an IRIDA SISTR AnalysisSubmission.
+		"""
+		Gets the relevent SISTR information from an IRIDA SISTR AnalysisSubmission.
 
-		Args:
-		    submission The IRIDA SISTR AnalysisSubmission data structure.
-
-		Returns: The SISTR information object (SampleSistrInfo) fro this submission.
+		:param submission: The IRIDA SISTR AnalysisSubmission data structure.
+		:return: The SISTR information object (SampleSistrInfo) fro this submission.
 		"""
 		sistr_info={}
 	
@@ -178,10 +174,10 @@ class IridaAPI(object):
 		return SampleSistrInfo(sistr_info)
 	
 	def get_sistr_submissions_for_user(self, sistr_workflow_id = None):
-		"""Gets all SISTR results accessible by a user (includes those submitted by a user or shared with a user via a project).
+		"""
+		Gets all SISTR results accessible by a user (includes those submitted by a user or shared with a user via a project).
 		:param workflow_version: The SISTR workflow ID, None for getting workflow results.
-
-		Returns:  A list of SampleSistrInfo objects that the current user has access to.
+		:return:  A list of SampleSistrInfo objects that the current user has access to.
 		"""
 		sistr_submissions_for_user=self.irida_connector.get_resources('/api/analysisSubmissions/analysisType/sistr')
 		

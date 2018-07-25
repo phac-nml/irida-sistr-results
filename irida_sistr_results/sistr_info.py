@@ -10,6 +10,12 @@ class SampleSistrInfo(object):
 
 	@classmethod
 	def create_empty_info(cls, sample, sequencing_object = None):
+		"""
+		Creates an empty SampleSistrInfo object (no SISTR results).
+		:param sample: The sample this object refers to.
+		:param sequencing_object: The sequencing object (default None).
+		:return: An empty SampleSistrInfo.
+		"""
 		data = {'sample': sample,
 				'has_results': False
 		}
