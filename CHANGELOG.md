@@ -2,6 +2,7 @@
 
 * Changed code to conform better to Python packaging standards.
 * Moved location of `config.ini` file so it gets properly included in Python package.
+* Add command-line option `--workflow-version` to export SISTR results from specific versions of the IRIDA SISTR workflow.
 
 # Version  0.4.0
 
