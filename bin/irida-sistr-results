@@ -16,30 +16,31 @@ from irida_sistr_results.sistr_writer import SistrCsvWriter, SistrExcelWriter
 from irida_sistr_results import version
 from irida_sistr_results.irida_sistr_workflow import IridaSistrWorkflow
 
-conf_dir=os.path.join(os.path.dirname(os.path.realpath(version.__file__)), 'etc')
-appname=os.path.basename(__file__)
+conf_dir = os.path.join(os.path.dirname(os.path.realpath(version.__file__)), 'etc')
+appname = os.path.basename(__file__)
 
-example_conf_file=os.path.join(conf_dir,'config.ini.example')
-conf_file = os.path.join(conf_dir,'config.ini')
+example_conf_file = os.path.join(conf_dir, 'config.ini.example')
+conf_file = os.path.join(conf_dir, 'config.ini')
 
-user_conf_dir=appdirs.user_data_dir(os.path.splitext(appname)[0])
-user_conf_file=os.path.join(user_conf_dir,'config.ini')
+user_conf_dir = appdirs.user_data_dir(os.path.splitext(appname)[0])
+user_conf_file = os.path.join(user_conf_dir, 'config.ini')
 
-logger=logging.getLogger("irida-sistr-results")
+logger = logging.getLogger("irida-sistr-results")
 
-def main(irida_url,client_id,client_secret,username,password,verbose,projects,tabular_file,excel_file,include_user_results,exclude_user_existing_results,all_projects,timeout,config,workflow_version):
+def main(irida_url, client_id, client_secret, username, password, verbose, projects, tabular_file, excel_file,
+         include_user_results, exclude_user_existing_results, all_projects, timeout, config, workflow_version):
 	"""Main method connecting to IRIDA/writing SISTR results file."""
-	logging.info("Running "+appname+" version "+version.__version__)
+	logging.info("Running " + appname + " version " + version.__version__)
 
-	connector = IridaConnector(client_id,client_secret,username,password,irida_url,timeout)
+	connector = IridaConnector(client_id, client_secret, username, password, irida_url, timeout)
 	irida_api = IridaAPI(connector)
-	irida_results = IridaSistrResults(irida_api,include_user_results,not exclude_user_existing_results,workflow_version)
+	irida_results = IridaSistrResults(irida_api, include_user_results, not exclude_user_existing_results, workflow_version)
 	
 	if all_projects:
 		logger.info("Getting results for all projects in IRIDA. This may take a while.")
 		sistr_list = irida_results.get_sistr_results_all_projects()
 	else:
-		logger.info("Getting results for projects: " + str(projects)+". This may take a while.")
+		logger.info("Getting results for projects: " + str(projects) + ". This may take a while.")
 		sistr_list = irida_results.get_sistr_results_from_projects(projects)
 
 	total_sample_results=0
