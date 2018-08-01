@@ -88,14 +88,14 @@ class IridaAPI(object):
 		"""
 		return self.irida_connector.get_resources('/api/projects')
 	
-	def get_sistr_results_for_project(self, project, sistr_workflow_id):
+	def get_sistr_results_for_project(self, project, sistr_workflow_ids):
 		"""
 		Gets information on all SISTR results in a project (that is, automated SISTR results).
 		This is structured as a list of objects (on per sample) containing a SampleSistrInfo object if available and whether
 		or not these results are available for a sample (from keys 'has_results').
 
 		:param project:  The project to search through.
-		:param sistr_workflow_id: The SISTR workflow id, None for all workflow results.
+		:param sistr_workflow_ids: A list of SISTR workflow ids, None for all workflow results.
 		:return: A list of dictionaries containing SampleSistrInfo objects and/or indicators for missing results.
 		"""
 		sistr_results=[]
@@ -119,13 +119,13 @@ class IridaAPI(object):
 								sample['identifier'])
 						else:
 							new_sistr_info = self.get_sistr_info_from_submission(sistr)
-							sistr_info = self._update_sample_sistr_info(sistr_info, new_sistr_info, sistr_workflow_id)
+							sistr_info = self._update_sample_sistr_info(sistr_info, new_sistr_info, sistr_workflow_ids)
 
 			sistr_results.append(sistr_info)
 		return sistr_results
 
-	def _update_sample_sistr_info(self, curr_sistr_info, new_sistr_info, sistr_workflow_id):
-		if sistr_workflow_id is None or sistr_workflow_id == new_sistr_info.get_submission_workflow_id():
+	def _update_sample_sistr_info(self, curr_sistr_info, new_sistr_info, sistr_workflow_ids):
+		if sistr_workflow_ids is None or new_sistr_info.get_submission_workflow_id() in sistr_workflow_ids:
 			if not curr_sistr_info.has_sistr_results():
 				return new_sistr_info
 			elif new_sistr_info.get_qc_status() == 'PASS' and curr_sistr_info.get_qc_status() != 'PASS':
@@ -135,8 +135,8 @@ class IridaAPI(object):
 				return new_sistr_info
 		else:
 			logger.debug(
-				"Skipping sistr submission [id=%s, workflowId=%s]. workflowId != %s".format(
-					new_sistr_info.get_sample_id(), new_sistr_info.get_submission_workflow_id(), sistr_workflow_id))
+				"Skipping sistr submission [id=%s, workflowId=%s]. workflowId not in %s".format(
+					new_sistr_info.get_sample_id(), new_sistr_info.get_submission_workflow_id(), sistr_workflow_ids))
 
 		return curr_sistr_info
 		
@@ -173,10 +173,10 @@ class IridaAPI(object):
 	
 		return SampleSistrInfo(sistr_info)
 	
-	def get_sistr_submissions_for_user(self, sistr_workflow_id = None):
+	def get_sistr_submissions_for_user(self, sistr_workflow_ids = None):
 		"""
 		Gets all SISTR results accessible by a user (includes those submitted by a user or shared with a user via a project).
-		:param workflow_version: The SISTR workflow ID, None for getting workflow results.
+		:param sistr_workflow_ids: A list of SISTR workflow ids, None for getting all workflow results.
 		:return:  A list of SampleSistrInfo objects that the current user has access to.
 		"""
 		sistr_submissions_for_user=self.irida_connector.get_resources('/api/analysisSubmissions/analysisType/sistr')
@@ -185,11 +185,11 @@ class IridaAPI(object):
 		for sistr in sistr_submissions_for_user:
 			try:
 				if (sistr['analysisState'] == 'COMPLETED'):
-					if sistr_workflow_id is None or sistr_workflow_id == sistr['workflowId']:
+					if sistr_workflow_ids is None or sistr['workflowId'] in sistr_workflow_ids:
 						sistr_analysis_list.append(self.get_sistr_info_from_submission(sistr))
 					else:
-						logger.debug("Skipping sistr submission [id=%s, workflowId=%s]. workflowId != %s".format(
-							sistr['identifier'], sistr['workflowId'], sistr_workflow_id))
+						logger.debug("Skipping sistr submission [id=%s, workflowId=%s]. workflowId not in %s".format(
+							sistr['identifier'], sistr['workflowId'], sistr_workflow_ids))
 				else:
 					logger.debug('Skipping incompleted sistr submission [id=%s]', sistr['identifier'])
 			except (HTTPError, SistrResultsException) as e:
@@ -197,11 +197,11 @@ class IridaAPI(object):
 
 		return sistr_analysis_list
 
-	def get_sistr_submissions_shared_to_project(self, project_id, sistr_workflow_id = None):
+	def get_sistr_submissions_shared_to_project(self, project_id, sistr_workflow_ids = None):
 		"""
 		Gets all SISTR results that were shared to a project.
 		:param project_id: The project identifier.
-		:param sistr_workflow_id: The SISTR workflow id of results to include.
+		:param sistr_workflow_ids: A list of SISTR workflow ids of results to include.
 		:return: A list of all SISTR results shared to the project.
 		"""
 		sistr_submissions_for_project = self.irida_connector.get_resources('/api/projects/'+str(project_id)+'/analyses/sistr')
@@ -210,11 +210,11 @@ class IridaAPI(object):
 		for sistr in sistr_submissions_for_project:
 			try:
 				if (sistr['analysisState'] == 'COMPLETED'):
-					if sistr_workflow_id is None or sistr_workflow_id == sistr['workflowId']:
+					if sistr_workflow_ids is None or sistr['workflowId'] in sistr_workflow_ids:
 						sistr_analysis = self._get_sistr_submission(sistr['identifier'])
 						sistr_analysis_list.append(self.get_sistr_info_from_submission(sistr_analysis))
 					else:
-						logger.debug("Skipping sistr submission [id=%s, workflowId=%s]. workflowId != %s".format(sistr['identifier'], sistr['workflowId'], sistr_workflow_id))
+						logger.debug("Skipping sistr submission [id=%s, workflowId=%s]. workflowId not in %s".format(sistr['identifier'], sistr['workflowId'], sistr_workflow_ids))
 				else:
 					logger.debug('Skipping incompleted sistr submission [id=%s]', sistr['identifier'])
 			except (HTTPError, SistrResultsException) as e:

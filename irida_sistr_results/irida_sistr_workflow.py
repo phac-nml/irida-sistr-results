@@ -39,6 +39,15 @@ class IridaSistrWorkflow:
         return cls.WORKFLOW_IDS[workflow_version]
 
     @classmethod
+    def workflow_versions_to_ids(cls, workflow_versions):
+        """
+        Converts a list of IRIDA workflow versions to a list of ids.
+        :param workflow_versions: The list of workflow versions.
+        :return: The list of ids.
+        """
+        return None if workflow_versions is None else [cls.workflow_version_to_id(x) for x in workflow_versions]
+
+    @classmethod
     def all_workflow_versions(cls):
         """
         Gets a list of all workflow versions.

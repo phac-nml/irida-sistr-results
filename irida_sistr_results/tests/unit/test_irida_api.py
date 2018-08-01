@@ -74,14 +74,21 @@ class IridaAPITest(unittest.TestCase):
     def test_get_sistr_submissions_for_user_one_workflow(self):
         self.connector.get_resources.return_value = self._create_user_results_workflow(
             ['92ecf046-ee09-4271-b849-7a82625d6b60', 'e8f9cc61-3264-48c6-81d9-02d9e84bccc7'])
-        sistr_results = self.irida_api.get_sistr_submissions_for_user('92ecf046-ee09-4271-b849-7a82625d6b60')
+        sistr_results = self.irida_api.get_sistr_submissions_for_user(['92ecf046-ee09-4271-b849-7a82625d6b60'])
         self.assertEqual([0], sistr_results, "Should have correct identifiers")
 
     def test_get_sistr_submissions_for_user_other_workflow(self):
         self.connector.get_resources.return_value = self._create_user_results_workflow(
             ['92ecf046-ee09-4271-b849-7a82625d6b60', 'e8f9cc61-3264-48c6-81d9-02d9e84bccc7'])
-        sistr_results = self.irida_api.get_sistr_submissions_for_user('e8f9cc61-3264-48c6-81d9-02d9e84bccc7')
+        sistr_results = self.irida_api.get_sistr_submissions_for_user(['e8f9cc61-3264-48c6-81d9-02d9e84bccc7'])
         self.assertEqual([1], sistr_results, "Should have correct identifiers")
+
+    def test_get_sistr_submissions_for_user_both_workflows(self):
+        self.connector.get_resources.return_value = self._create_user_results_workflow(
+            ['92ecf046-ee09-4271-b849-7a82625d6b60', 'e8f9cc61-3264-48c6-81d9-02d9e84bccc7'])
+        sistr_results = self.irida_api.get_sistr_submissions_for_user(['92ecf046-ee09-4271-b849-7a82625d6b60',
+                                                                       'e8f9cc61-3264-48c6-81d9-02d9e84bccc7'])
+        self.assertEqual([0, 1], sistr_results, "Should have correct identifiers")
 
     def test_get_sistr_submissions_for_project_multiple(self):
         self.connector.get_resources.return_value = self._create_user_results_state(['COMPLETED', 'COMPLETED'])
@@ -97,29 +104,44 @@ class IridaAPITest(unittest.TestCase):
         self.connector.get_resources.return_value = self._create_user_results_workflow(
             ['92ecf046-ee09-4271-b849-7a82625d6b60', 'e8f9cc61-3264-48c6-81d9-02d9e84bccc7'])
         sistr_results = self.irida_api.get_sistr_submissions_shared_to_project(1,
-                                                                               '92ecf046-ee09-4271-b849-7a82625d6b60')
+                                                                               ['92ecf046-ee09-4271-b849-7a82625d6b60'])
         self.assertEqual([0], sistr_results, "Should have correct identifiers")
 
     def test_get_sistr_submissions_for_project_other_workflow(self):
         self.connector.get_resources.return_value = self._create_user_results_workflow(
             ['92ecf046-ee09-4271-b849-7a82625d6b60', 'e8f9cc61-3264-48c6-81d9-02d9e84bccc7'])
         sistr_results = self.irida_api.get_sistr_submissions_shared_to_project(1,
-                                                                               'e8f9cc61-3264-48c6-81d9-02d9e84bccc7')
+                                                                               ['e8f9cc61-3264-48c6-81d9-02d9e84bccc7'])
         self.assertEqual([1], sistr_results, "Should have correct identifiers")
+
+    def test_get_sistr_submissions_for_project_both_workflows(self):
+        self.connector.get_resources.return_value = self._create_user_results_workflow(
+            ['92ecf046-ee09-4271-b849-7a82625d6b60', 'e8f9cc61-3264-48c6-81d9-02d9e84bccc7'])
+        sistr_results = self.irida_api.get_sistr_submissions_shared_to_project(1, ['92ecf046-ee09-4271-b849-7a82625d6b60',
+                                                                                   'e8f9cc61-3264-48c6-81d9-02d9e84bccc7'])
+        self.assertEqual([0, 1], sistr_results, "Should have correct identifiers")
 
     def test_update_sample_sistr_info_most_recent(self):
         curr_sistr_info = self._create_sistr_info('92ecf046-ee09-4271-b849-7a82625d6b60', 'PASS', 1500000000000)
         new_sistr_info = self._create_sistr_info('92ecf046-ee09-4271-b849-7a82625d6b60', 'PASS', 1500000000001)
         updated_results = self.irida_api._update_sample_sistr_info(curr_sistr_info, new_sistr_info,
-                                                                   '92ecf046-ee09-4271-b849-7a82625d6b60')
+                                                                   ['92ecf046-ee09-4271-b849-7a82625d6b60'])
         self.assertEqual(new_sistr_info, updated_results, "Did not update to proper results")
 
     def test_update_sample_sistr_info_skip_workflow(self):
         curr_sistr_info = self._create_sistr_info('92ecf046-ee09-4271-b849-7a82625d6b60', 'PASS', 1500000000000)
         new_sistr_info = self._create_sistr_info('e8f9cc61-3264-48c6-81d9-02d9e84bccc7', 'PASS', 1500000000001)
         updated_results = self.irida_api._update_sample_sistr_info(curr_sistr_info, new_sistr_info,
-                                                                   '92ecf046-ee09-4271-b849-7a82625d6b60')
+                                                                   ['92ecf046-ee09-4271-b849-7a82625d6b60'])
         self.assertEqual(curr_sistr_info, updated_results, "Did not update to proper results")
+
+    def test_update_sample_sistr_info_use_most_recent_both_workflows(self):
+        curr_sistr_info = self._create_sistr_info('92ecf046-ee09-4271-b849-7a82625d6b60', 'PASS', 1500000000000)
+        new_sistr_info = self._create_sistr_info('e8f9cc61-3264-48c6-81d9-02d9e84bccc7', 'PASS', 1500000000001)
+        updated_results = self.irida_api._update_sample_sistr_info(curr_sistr_info, new_sistr_info,
+                                                                   ['92ecf046-ee09-4271-b849-7a82625d6b60',
+                                                                    'e8f9cc61-3264-48c6-81d9-02d9e84bccc7'])
+        self.assertEqual(new_sistr_info, updated_results, "Did not update to proper results")
 
     def test_update_sample_sistr_info_use_most_recent_all_workflows(self):
         curr_sistr_info = self._create_sistr_info('92ecf046-ee09-4271-b849-7a82625d6b60', 'PASS', 1500000000000)
@@ -131,21 +153,21 @@ class IridaAPITest(unittest.TestCase):
         curr_sistr_info = self._create_sistr_info('92ecf046-ee09-4271-b849-7a82625d6b60', 'PASS', 1500000000000)
         new_sistr_info = self._create_sistr_info('92ecf046-ee09-4271-b849-7a82625d6b60', 'PASS', 1500000000000)
         updated_results = self.irida_api._update_sample_sistr_info(curr_sistr_info, new_sistr_info,
-                                                                   '92ecf046-ee09-4271-b849-7a82625d6b60')
+                                                                   ['92ecf046-ee09-4271-b849-7a82625d6b60'])
         self.assertEqual(curr_sistr_info, updated_results, "Did not update to proper results")
 
     def test_update_sample_sistr_info_pass(self):
         curr_sistr_info = self._create_sistr_info('92ecf046-ee09-4271-b849-7a82625d6b60', 'FAIL', 1500000000000)
         new_sistr_info = self._create_sistr_info('92ecf046-ee09-4271-b849-7a82625d6b60', 'PASS', 1500000000000)
         updated_results = self.irida_api._update_sample_sistr_info(curr_sistr_info, new_sistr_info,
-                                                                   '92ecf046-ee09-4271-b849-7a82625d6b60')
+                                                                   ['92ecf046-ee09-4271-b849-7a82625d6b60'])
         self.assertEqual(new_sistr_info, updated_results, "Did not update to proper results")
 
     def test_update_sample_sistr_info_fail(self):
         curr_sistr_info = self._create_sistr_info('92ecf046-ee09-4271-b849-7a82625d6b60', 'PASS', 1500000000000)
         new_sistr_info = self._create_sistr_info('92ecf046-ee09-4271-b849-7a82625d6b60', 'FAIL', 1500000000001)
         updated_results = self.irida_api._update_sample_sistr_info(curr_sistr_info, new_sistr_info,
-                                                                   '92ecf046-ee09-4271-b849-7a82625d6b60')
+                                                                   ['92ecf046-ee09-4271-b849-7a82625d6b60'])
         self.assertEqual(curr_sistr_info, updated_results, "Did not update to proper results")
 
     def test_update_sample_sistr_info_no_results(self):
@@ -176,7 +198,7 @@ class IridaAPITest(unittest.TestCase):
         })
         new_sistr_info = self._create_sistr_info('92ecf046-ee09-4271-b849-7a82625d6b60', 'PASS', 1500000000000)
         updated_results = self.irida_api._update_sample_sistr_info(curr_sistr_info, new_sistr_info,
-                                                                   '92ecf046-ee09-4271-b849-7a82625d6b60')
+                                                                   ['92ecf046-ee09-4271-b849-7a82625d6b60'])
         self.assertEqual(new_sistr_info, updated_results, "Did not update to proper results")
 
     def test_update_sample_sistr_info_no_results_workflow_id_fail(self):
@@ -187,7 +209,7 @@ class IridaAPITest(unittest.TestCase):
         })
         new_sistr_info = self._create_sistr_info('92ecf046-ee09-4271-b849-7a82625d6b60', 'FAIL', 1500000000000)
         updated_results = self.irida_api._update_sample_sistr_info(curr_sistr_info, new_sistr_info,
-                                                                   '92ecf046-ee09-4271-b849-7a82625d6b60')
+                                                                   ['92ecf046-ee09-4271-b849-7a82625d6b60'])
         self.assertEqual(new_sistr_info, updated_results, "Did not update to proper results")
 
     def test_update_sample_sistr_info_no_results_workflow_id_incorrect(self):
@@ -198,5 +220,5 @@ class IridaAPITest(unittest.TestCase):
         })
         new_sistr_info = self._create_sistr_info('92ecf046-ee09-4271-b849-7a82625d6b60', 'PASS', 1500000000000)
         updated_results = self.irida_api._update_sample_sistr_info(curr_sistr_info, new_sistr_info,
-                                                                   'e8f9cc61-3264-48c6-81d9-02d9e84bccc7')
+                                                                   ['e8f9cc61-3264-48c6-81d9-02d9e84bccc7'])
         self.assertEqual(curr_sistr_info, updated_results, "Did not update to proper results")

@@ -47,16 +47,16 @@ To include results for **MISSING** samples you must re-run the data for these re
 You may restrict results to only come from a particular IRIDA/SISTR workflow version. For example:
 
 ```bash
-irida-sistr-results -p 1 --workflow-version 0.3 -u irida-user -o out.xlsx
+irida-sistr-results -p 1 -w 0.3 -w 0.2 -u irida-user -o out.xlsx
 ```
 
-This will list each sample in project **1**, only including those results from the SISTR workflow version `0.3`.
+This will list each sample in project **1**, only including those results from the SISTR workflow versions `0.3` or `0.2`.
 
 By default, results will come from any workflow version. A list of possible versions is shown when running `irida-sistr-results -h`.
 
 ```
-  --workflow-version WORKFLOW_VERSION
-                        Only include results of this workflow version ['0.1', '0.2', '0.3'] [all versions]
+  -w WORKFLOW_VERSIONS, --workflow-version WORKFLOW_VERSIONS
+                        Only include results of these workflow version(s) ['0.1', '0.2', '0.3'] [all versions]
 ```
 
 # Installation
@@ -107,8 +107,7 @@ usage: irida-sistr-results [-h] [--irida-url IRIDA_URL]
                            [--output-tab TABULAR_FILE] [-o EXCEL_FILE]
                            [--include-user-results]
                            [--exclude-user-existing-results] [-T TIMEOUT]
-                           [-c CONFIG] [-V]
-                           [--workflow-version WORKFLOW_VERSION]
+                           [-c CONFIG] [-V] [-w WORKFLOW_VERSIONS]
 
 Compile SISTR results from an IRIDA instance into a table.
 
@@ -143,8 +142,8 @@ optional arguments:
                         Configuration file for IRIDA (overrides values in 
                           ['irida_sistr_results/etc/config.ini', '~/.local/share/irida-sistr-results/config.ini'])
   -V, --version         show program's version number and exit
-  --workflow-version WORKFLOW_VERSION
-                        Only include results of this workflow version ['0.1', '0.2', '0.3'] [all versions]
+  -w WORKFLOW_VERSIONS, --workflow-version WORKFLOW_VERSIONS
+                        Only include results of these workflow version(s) ['0.1', '0.2', '0.3'] [all versions]
 
 Example:
         irida-sistr-results -a -u irida-user -o out.xlsx
@@ -153,8 +152,8 @@ Example:
         irida-sistr-results -p 1 -p 2 -u irida-user -o out.xlsx
                 Exports SISTR results from projects [1,2] to a file 'out.xlsx'
 
-        irida-sistr-results -p 1 --workflow-version 0.3 -u irida-user -o out.xlsx
-                Exports only SISTR results from workflow version 0.3 form project [1]
+        irida-sistr-results -p 1 -w 0.3 -w 0.2 -u irida-user -o out.xlsx
+                Exports only SISTR results from workflow versions 0.3 and 0.2 from project [1]
 ```
 
 # Legal
