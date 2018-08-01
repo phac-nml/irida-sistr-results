@@ -58,7 +58,7 @@ class IridaAPITest(unittest.TestCase):
     def test_get_sistr_submissions_for_user_error(self):
         self.connector.get_resources.return_value = self._create_user_results_state(['ERROR'])
         sistr_results = self.irida_api.get_sistr_submissions_for_user()
-        self.assertEqual(0, len(sistr_results), "Should have empty results")
+        self.assertEqual([], sistr_results, "Should have empty results")
 
     def test_get_sistr_submissions_for_user_error_one_success(self):
         self.connector.get_resources.return_value = self._create_user_results_state(['COMPLETED', 'ERROR'])
