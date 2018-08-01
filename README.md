@@ -151,7 +151,7 @@ Example:
                 Exports all SISTR results from all projects to a file 'out.xlsx'
 
         irida-sistr-results -p 1 -p 2 -u irida-user -o out.xlsx
-                Exports SISTR results form projects [1,2] to a file 'out.xlsx'
+                Exports SISTR results from projects [1,2] to a file 'out.xlsx'
 
         irida-sistr-results -p 1 --workflow-version 0.3 -u irida-user -o out.xlsx
                 Exports only SISTR results from workflow version 0.3 form project [1]

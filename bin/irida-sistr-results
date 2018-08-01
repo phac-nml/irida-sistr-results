@@ -120,7 +120,7 @@ if __name__ == '__main__':
 			"\n\t" + appname + " -a -u irida-user -o out.xlsx"+
 			"\n\t\tExports all SISTR results from all projects to a file 'out.xlsx'"+
 			"\n\n\t" + appname + " -p 1 -p 2 -u irida-user -o out.xlsx"+
-			"\n\t\tExports SISTR results form projects [1,2] to a file 'out.xlsx'" +
+			"\n\t\tExports SISTR results from projects [1,2] to a file 'out.xlsx'" +
 			"\n\n\t" + appname + " -p 1 --workflow-version 0.3 -u irida-user -o out.xlsx" +
 			"\n\t\tExports only SISTR results from workflow version 0.3 form project [1]")
 
