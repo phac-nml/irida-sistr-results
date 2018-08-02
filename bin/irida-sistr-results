@@ -176,7 +176,7 @@ if __name__ == '__main__':
     parser.add_argument('-w', '--workflow', action='append', dest='workflow_versions_or_ids', default=None,
                         help="Only include results of these workflow versions (or uuids) {} [all versions]".format(
                             IridaSistrWorkflow.all_workflow_versions()))
-    parser.add_argument('--samples-created-since-days', action='store', dest='samples_created_since_days', type=float,
+    parser.add_argument('-d' , '--samples-created-since-days', action='store', dest='samples_created_since_days', type=float,
                         default=None,
                         help='Only include samples created more recently than this many days ago [Include all samples]')
 

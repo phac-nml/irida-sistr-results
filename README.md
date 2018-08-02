@@ -63,10 +63,10 @@ You may also pass the workflow UUID to `--workflow` instead of the version.
 
 ## Only include results from samples within a particular time period
 
-You may restrict results to only come from a particular number of days ago using `--samples-created-since-days`.  For example:
+You may restrict results to only come from a particular number of days ago using `-d|--samples-created-since-days`.  For example:
 
 ```bash
-irida-sistr-results -p 1 --samples-created-since-days 7 -u irida-user -o out.xlsx
+irida-sistr-results -p 1 -d 7 -u irida-user -o out.xlsx
 ```
 
 This will export results from project 1, only exporting those results from samples created in the past 7 days.
@@ -120,7 +120,7 @@ usage: irida-sistr-results [-h] [--irida-url IRIDA_URL]
                            [--include-user-results]
                            [--exclude-user-existing-results] [-T TIMEOUT]
                            [-c CONFIG] [-V] [-w WORKFLOW_VERSIONS_OR_IDS]
-                           [--samples-created-since-days SAMPLES_CREATED_SINCE_DAYS]
+                           [-d SAMPLES_CREATED_SINCE_DAYS]
 
 Compile SISTR results from an IRIDA instance into a table.
 
@@ -138,8 +138,8 @@ optional arguments:
   -v, --verbose         Turn on verbose logging.
   -p PROJECTS, --project PROJECTS
                         Projects to scan for SISTR results. If left blank will scan all projects the user has access to.
-  -a, --all-projects    Explicitly load results from all projects the user has access to.  Will ignore the values given
-                          in --project.
+  -a, --all-projects    Explicitly load results from all projects the user has access to.  Will ignore the values given 
+                        in --project.
   --output-tab TABULAR_FILE, --to-tab-file TABULAR_FILE
                         Print results to tab-deliminited file.
   -o EXCEL_FILE, --output-excel EXCEL_FILE, --to-excel-file EXCEL_FILE
@@ -148,16 +148,16 @@ optional arguments:
                         Include SISTR analysis results run directly by the user.
   --exclude-user-existing-results
                         If including user results, do not replace existing SISTR analysis that were automatically
-                          generated with user-run SISTR results.
+                        generated with user-run SISTR results.
   -T TIMEOUT, --connection-timeout TIMEOUT
                         Connection timeout when getting results from IRIDA.
   -c CONFIG, --config CONFIG
-                        Configuration file for IRIDA (overrides values in 
-                          ['irida_sistr_results/etc/config.ini', '~/.local/share/irida-sistr-results/config.ini'])
+                        Configuration file for IRIDA (overrides values in ['irida_sistr_results/etc/config.ini',
+                        '.local/share/irida-sistr-results/config.ini'])
   -V, --version         show program's version number and exit
   -w WORKFLOW_VERSIONS_OR_IDS, --workflow WORKFLOW_VERSIONS_OR_IDS
                         Only include results of these workflow versions (or uuids) ['0.1', '0.2', '0.3'] [all versions]
-  --samples-created-since-days SAMPLES_CREATED_SINCE_DAYS
+  -d SAMPLES_CREATED_SINCE_DAYS, --samples-created-since-days SAMPLES_CREATED_SINCE_DAYS
                         Only include samples created more recently than this many days ago [Include all samples]
 
 Example:
