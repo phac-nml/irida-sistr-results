@@ -1,9 +1,11 @@
 import uuid
 
+"""
+Functionality for conversion between workflow ids and versions.
+"""
+
 
 class IridaSistrWorkflow:
-    """Functionality for conversion between workflow ids and versions."""
-
     WORKFLOW_IDS = {
         '0.1': 'e559af58-a560-4bbd-997e-808bfbe026e2',
         '0.1.0': 'e559af58-a560-4bbd-997e-808bfbe026e2',

@@ -61,6 +61,16 @@ By default, results will come from any workflow version. A list of possible vers
 
 You may also pass the workflow UUID to `--workflow` instead of the version.
 
+## Only include results from samples within a particular time period
+
+You may restrict results to only come from a particular number of days ago using `--samples-created-since-days`.  For example:
+
+```bash
+irida-sistr-results -p 1 --samples-created-since-days 7 -u irida-user -o out.xlsx
+```
+
+This will export results from project 1, only exporting those results from samples created in the past 7 days.
+
 # Installation
 
 ## Bioconda
@@ -110,6 +120,7 @@ usage: irida-sistr-results [-h] [--irida-url IRIDA_URL]
                            [--include-user-results]
                            [--exclude-user-existing-results] [-T TIMEOUT]
                            [-c CONFIG] [-V] [-w WORKFLOW_VERSIONS_OR_IDS]
+                           [--samples-created-since-days SAMPLES_CREATED_SINCE_DAYS]
 
 Compile SISTR results from an IRIDA instance into a table.
 
@@ -146,6 +157,8 @@ optional arguments:
   -V, --version         show program's version number and exit
   -w WORKFLOW_VERSIONS_OR_IDS, --workflow WORKFLOW_VERSIONS_OR_IDS
                         Only include results of these workflow versions (or uuids) ['0.1', '0.2', '0.3'] [all versions]
+  --samples-created-since-days SAMPLES_CREATED_SINCE_DAYS
+                        Only include samples created more recently than this many days ago [Include all samples]
 
 Example:
         irida-sistr-results -a -u irida-user -o out.xlsx

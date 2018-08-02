@@ -1,5 +1,6 @@
 import json
 import logging
+from datetime import datetime
 
 from requests.exceptions import HTTPError
 
@@ -84,14 +85,13 @@ class IridaAPI(object):
         return self.irida_connector.get('/api/projects/' + str(project_id))
 
     def get_user_projects(self):
-        """
-        Gets information on all projects in IRIDA the current user has access to.
+        """Gets information on all projects in IRIDA the current user has access to.
 
-        :return:  The JSON results for all the user-accessible projects in IRIDA.
+        Returns:  The JSON results for all the user-accessible projects in IRIDA.
         """
         return self.irida_connector.get_resources('/api/projects')
 
-    def get_sistr_results_for_project(self, project, sistr_workflow_ids):
+    def get_sistr_results_for_project(self, project, sistr_workflow_ids, sample_created_date_min):
         """
         Gets information on all SISTR results in a project (that is, automated SISTR results).
         This is structured as a list of objects (on per sample) containing a SampleSistrInfo object if available and whether
@@ -99,6 +99,7 @@ class IridaAPI(object):
 
         :param project:  The project to search through.
         :param sistr_workflow_ids: A list of SISTR workflow ids, None for all workflow results.
+        :param sample_created_date_min: Only return results for samples created after this date.
         :return: A list of dictionaries containing SampleSistrInfo objects and/or indicators for missing results.
         """
         sistr_results = []
@@ -106,25 +107,32 @@ class IridaAPI(object):
         sistr_results_for_project = self.irida_connector.get_resources('/api/projects/' + str(project) + '/samples')
 
         for sample in sistr_results_for_project:
-            sample_pairs = self.irida_connector.get_resources('/api/samples/' + sample['identifier'] + '/pairs')
+            if sample_created_date_min and datetime.fromtimestamp(
+                    sample['createdDate'] / 1000) < sample_created_date_min:
+                logger.debug("sample [id=%s, name=%s, createdDate=%s] created before %s, skipping.",
+                             sample['identifier'], sample['sampleName'], sample['createdDate'],
+                             sample_created_date_min)
+            else:
+                sample_pairs = self.irida_connector.get_resources('/api/samples/' + sample['identifier'] + '/pairs')
 
-            sistr_info = SampleSistrInfo.create_empty_info(sample)
+                sistr_info = SampleSistrInfo.create_empty_info(sample)
 
-            if len(sample_pairs) > 0:
-                for sequencing_object in sample_pairs:
-                    if (self._has_rel_in_links('analysis/sistr', sequencing_object['links'])):
-                        sistr_rel = self._get_rel_from_links('analysis/sistr', sequencing_object['links'])
-                        sistr = self.irida_connector.get(sistr_rel)
+                if len(sample_pairs) > 0:
+                    for sequencing_object in sample_pairs:
+                        if (self._has_rel_in_links('analysis/sistr', sequencing_object['links'])):
+                            sistr_rel = self._get_rel_from_links('analysis/sistr', sequencing_object['links'])
+                            sistr = self.irida_connector.get(sistr_rel)
 
-                        if (sistr['analysisState'] != 'COMPLETED'):
-                            logger.debug(
-                                "Skipping automated SISTR results associated with sample=%s as state is not 'COMPLETED'.",
-                                sample['identifier'])
-                        else:
-                            new_sistr_info = self.get_sistr_info_from_submission(sistr)
-                            sistr_info = self._update_sample_sistr_info(sistr_info, new_sistr_info, sistr_workflow_ids)
+                            if (sistr['analysisState'] != 'COMPLETED'):
+                                logger.debug(
+                                    "Skipping automated SISTR results associated with sample=%s as state is not 'COMPLETED'.",
+                                    sample['identifier'])
+                            else:
+                                new_sistr_info = self.get_sistr_info_from_submission(sistr)
+                                sistr_info = self._update_sample_sistr_info(sistr_info, new_sistr_info,
+                                                                            sistr_workflow_id)
 
-            sistr_results.append(sistr_info)
+                sistr_results.append(sistr_info)
         return sistr_results
 
     def _update_sample_sistr_info(self, curr_sistr_info, new_sistr_info, sistr_workflow_ids):

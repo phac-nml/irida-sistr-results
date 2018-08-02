@@ -3,6 +3,7 @@
 * Changed code to conform better to Python packaging standards.
 * Moved location of `config.ini` file so it gets properly included in Python package.
 * Add command-line option `--workflow` to export SISTR results from specific versions of the IRIDA SISTR workflow.
+* Add command-line option `--samples-created-since-days` to export SISTR results from samples created since the passed number of days ago.
 
 # Version  0.4.0
 

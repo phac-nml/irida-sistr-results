@@ -9,16 +9,17 @@ class IridaSistrResults(object):
     """Class for constructing the top-level data structures mapping projects to lists of SISTR results."""
 
     def __init__(self, irida_api, include_user_results, update_existing_with_user_results,
-                 sistr_workflow_versions_or_ids=None):
-        """
-        Creates a new IridaSistrResults object.
+                 sistr_workflow_versions_or_ids=None, sample_created_min_date=None):
+        """Creates a new IridaSistrResults object.
 
-        :param irida_api:  The IridaAPI object for connecting to IRIDA.
-        :param include_user_results:  Whether or not to include all user-accessible results (or just automated SISTR results).
-        :param update_existing_with_user_results:  Whether or not to update existing results with newer results run by a user.
-        :param sistr_workflow_versions_or_ids: A list of SISTR workflow versions (or UUIDs) of results to include.
+        Args:
+            irida_api:  The IridaAPI object for connecting to IRIDA.
+            include_user_results:  Whether or not to include all user-accessible results (or just automated SISTR results).
+            update_existing_with_user_results:  Whether or not to update existing results with newer results run by a user.
+            sistr_workflow_versions_or_ids: A list of SISTR workflow versions (or UUIDs) of results to include.
+            sample_created_min_date: The minimum (oldest) sample created date for samples to include results for.
 
-        :return:  A new IridaSistrResults object.
+        Returns:  A new IridaSistrResults object.
         """
         self.irida_api = irida_api
         self.include_user_results = include_user_results
@@ -26,23 +27,23 @@ class IridaSistrResults(object):
         self.sistr_workflow_ids = IridaSistrWorkflow.workflow_ids_or_versions_to_ids(sistr_workflow_versions_or_ids)
         self.sistr_results = {}
         self.sample_project = {}
+        self.sample_created_min_date = sample_created_min_date
 
     def get_sistr_results_all_projects(self):
-        """
-        Gets SISTR results from all projects accessible by the current user.
+        """Gets SISTR results from all projects accessible by the current user.
 
-        :return:  All SISTR results from all projects.
+        Returns:  All SISTR results from all projects.
         """
         projects = self.irida_api.get_user_projects()
         return self._get_sistr_results(projects)
 
     def get_sistr_results_from_projects(self, project_ids):
-        """
-        Gets SISTR results from the list of IRIDA project identifiers.
+        """Gets SISTR results from the list of IRIDA project identifiers.
 
-        :param project_ids:  The list of project ids.
+        Args:
+            project_ids:  The list of project ids.
 
-        :return:  All SISTR results from the passed projects.
+        Returns:  All SISTR results from the passed projects.
         """
         projects = []
         for p in project_ids:
@@ -100,7 +101,8 @@ class IridaSistrResults(object):
             raise Exception("Error: project " + str(project_id) + " already examined")
 
         self.sistr_results[project_id] = {}
-        project_results = self.irida_api.get_sistr_results_for_project(project_id, self.sistr_workflow_ids)
+        project_results = self.irida_api.get_sistr_results_for_project(project_id, self.sistr_workflow_ids,
+                                                                       self.sample_created_min_date)
 
         for result in project_results:
             if result is None:

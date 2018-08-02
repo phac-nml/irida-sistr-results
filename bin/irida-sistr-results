@@ -7,6 +7,8 @@ import logging
 import os
 import shutil
 import sys
+from datetime import datetime
+from datetime import timedelta
 
 import appdirs
 
@@ -30,14 +32,22 @@ logger = logging.getLogger("irida-sistr-results")
 
 
 def main(irida_url, client_id, client_secret, username, password, verbose, projects, tabular_file, excel_file,
-         include_user_results, exclude_user_existing_results, all_projects, timeout, config, workflow_versions_or_ids):
+         include_user_results, exclude_user_existing_results, all_projects, timeout, config, workflow_versions_or_ids,
+         samples_created_since_days):
     """Main method connecting to IRIDA/writing SISTR results file."""
     logging.info("Running " + appname + " version " + version.__version__)
+
+    sample_created_min_date = None
+    if samples_created_since_days:
+        sample_created_min_date = datetime.now() - timedelta(days=samples_created_since_days)
+        logger.debug(
+            '--samples-created-since-days set to [%s] days ago, only including samples created more recent than %s',
+            samples_created_since_days, sample_created_min_date)
 
     connector = IridaConnector(client_id, client_secret, username, password, irida_url, timeout)
     irida_api = IridaAPI(connector)
     irida_results = IridaSistrResults(irida_api, include_user_results, not exclude_user_existing_results,
-                                      workflow_versions_or_ids)
+                                      workflow_versions_or_ids, sample_created_min_date)
 
     if all_projects:
         logger.info("Getting results for all projects in IRIDA. This may take a while.")
@@ -68,22 +78,24 @@ def main(irida_url, client_id, client_secret, username, password, verbose, proje
                 logger.error("Somehow got wrong qc info '" + result.get_qc_status() + "'")
 
     proj_string = 'projects' if (total_projects > 1) else 'project'
+    sample_created_string = ' created more recently than ' + sample_created_min_date.strftime(
+        TIME_FORMAT) if sample_created_min_date else ''
     logger.info("Done getting SISTR results\n")
-    logger.info("Examined " + str(total_sample_results) + " samples in " + str(
-        total_projects) + ' ' + proj_string + " with status")
+    logger.info("Examined %s samples in %s %s%s with status", total_sample_results, total_projects, proj_string,
+                sample_created_string)
     logger.info("PASS:    " + str(pass_sample_results))
     logger.info("WARN:    " + str(warn_sample_results))
     logger.info("FAIL:    " + str(fail_sample_results))
     logger.info("MISSING: " + str(missing_sample_results))
 
     if tabular_file is not None:
-        writer = SistrCsvWriter(irida_url, appname, username, tabular_file)
+        writer = SistrCsvWriter(irida_url, appname, username, tabular_file, sample_created_min_date)
         writer.write(sistr_list)
         writer.close()
         logger.info("Wrote results to file " + tabular_file)
 
     if excel_file is not None:
-        writer = SistrExcelWriter(irida_url, appname, username, excel_file)
+        writer = SistrExcelWriter(irida_url, appname, username, excel_file, sample_created_min_date)
         writer.write(sistr_list)
         writer.close()
         logger.info("Wrote results to file " + excel_file)
@@ -110,12 +122,12 @@ def get_conf_files():
 
 
 def get_conf_files_plus(config_file):
-    """
-    Gets a list of configuration file paths plus the passed config file.
+    """Gets a list of configuration file paths plus the passed config file.
 
-    :param config_file:  The additional configuration file to include in this list.
+    Args:
+        config_file:  The additional configuration file to include in this list.
 
-    :return:  The default configuration files plus the user-defined configuration file.
+    Returns:  The default configuration files plus the user-defined configuration file.
     """
     l = get_conf_files()
     l.append(config_file)
@@ -162,6 +174,9 @@ if __name__ == '__main__':
     parser.add_argument('-w', '--workflow', action='append', dest='workflow_versions_or_ids', default=None,
                         help="Only include results of these workflow versions (or uuids) {} [all versions]".format(
                             IridaSistrWorkflow.all_workflow_versions()))
+    parser.add_argument('--samples-created-since-days', action='store', dest='samples_created_since_days', type=float,
+                        default=None,
+                        help='Only include samples created more recently than this many days ago [Include all samples]')
 
     if len(sys.argv) == 1:
         parser.print_help()
