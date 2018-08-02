@@ -30,6 +30,8 @@ user_conf_file = os.path.join(user_conf_dir, 'config.ini')
 
 logger = logging.getLogger("irida-sistr-results")
 
+TIME_FORMAT = "%Y/%m/%d"
+
 
 def main(irida_url, client_id, client_secret, username, password, verbose, projects, tabular_file, excel_file,
          include_user_results, exclude_user_existing_results, all_projects, timeout, config, workflow_versions_or_ids,
