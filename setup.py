@@ -30,6 +30,8 @@ setup(name='irida-sistr-results',
           'XlsxWriter>=0.9.8',
           'appdirs>=1.4.3'
       ],
+      test_suite='nose.collector',
+      tests_require=['nose'],
       packages=find_packages(),
       include_package_data=True,
       scripts=['bin/irida-sistr-results']

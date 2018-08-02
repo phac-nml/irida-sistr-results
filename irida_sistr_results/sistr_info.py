@@ -1,10 +1,29 @@
 from datetime import datetime
 
+from irida_sistr_results.irida_sistr_workflow import IridaSistrWorkflow
+
 class SampleSistrInfo(object):
 	"""Stores and provides access to SISTR/IRIDA information for a particular sample."""
 
 	def __init__(self, sistr_info):
 		self.sistr_info = sistr_info
+
+	@classmethod
+	def create_empty_info(cls, sample, sequencing_object = None):
+		"""
+		Creates an empty SampleSistrInfo object (no SISTR results).
+		:param sample: The sample this object refers to.
+		:param sequencing_object: The sequencing object (default None).
+		:return: An empty SampleSistrInfo.
+		"""
+		data = {'sample': sample,
+				'has_results': False
+		}
+
+		if sequencing_object is not None:
+			data['paired_files'] = sequencing_object
+
+		return cls(data)
 
 	def has_sistr_results(self):
 		return self.sistr_info['has_results']
@@ -95,6 +114,12 @@ class SampleSistrInfo(object):
 
 	def get_submission_identifier(self):
 		return self.sistr_info['submission']['identifier']
+
+	def get_submission_workflow_id(self):
+		return self.sistr_info['submission']['workflowId']
+
+	def get_submission_workflow_version(self):
+		return IridaSistrWorkflow.workflow_id_to_version(self.get_submission_workflow_id())
 
 	def get_submission_created_date(self):
 		return datetime.fromtimestamp(self.sistr_info['submission']['createdDate']/1000)

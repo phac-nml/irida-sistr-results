@@ -14,31 +14,33 @@ from irida_sistr_results.irida_api import IridaAPI
 from irida_sistr_results.irida_sistr_results import IridaSistrResults
 from irida_sistr_results.sistr_writer import SistrCsvWriter, SistrExcelWriter
 from irida_sistr_results import version
+from irida_sistr_results.irida_sistr_workflow import IridaSistrWorkflow
 
-conf_dir=os.path.join(os.path.dirname(os.path.realpath(version.__file__)), 'etc')
-appname=os.path.basename(__file__)
+conf_dir = os.path.join(os.path.dirname(os.path.realpath(version.__file__)), 'etc')
+appname = os.path.basename(__file__)
 
-example_conf_file=os.path.join(conf_dir,'config.ini.example')
-conf_file = os.path.join(conf_dir,'config.ini')
+example_conf_file = os.path.join(conf_dir, 'config.ini.example')
+conf_file = os.path.join(conf_dir, 'config.ini')
 
-user_conf_dir=appdirs.user_data_dir(os.path.splitext(appname)[0])
-user_conf_file=os.path.join(user_conf_dir,'config.ini')
+user_conf_dir = appdirs.user_data_dir(os.path.splitext(appname)[0])
+user_conf_file = os.path.join(user_conf_dir, 'config.ini')
 
-logger=logging.getLogger("irida-sistr-results")
+logger = logging.getLogger("irida-sistr-results")
 
-def main(irida_url,client_id,client_secret,username,password,verbose,projects,tabular_file,excel_file,include_user_results,exclude_user_existing_results,all_projects,timeout,config):
+def main(irida_url, client_id, client_secret, username, password, verbose, projects, tabular_file, excel_file,
+         include_user_results, exclude_user_existing_results, all_projects, timeout, config, workflow_versions_or_ids):
 	"""Main method connecting to IRIDA/writing SISTR results file."""
-	logging.info("Running "+appname+" version "+version.__version__)
+	logging.info("Running " + appname + " version " + version.__version__)
 
-	connector = IridaConnector(client_id,client_secret,username,password,irida_url,timeout)
+	connector = IridaConnector(client_id, client_secret, username, password, irida_url, timeout)
 	irida_api = IridaAPI(connector)
-	irida_results = IridaSistrResults(irida_api,include_user_results,not exclude_user_existing_results)
+	irida_results = IridaSistrResults(irida_api, include_user_results, not exclude_user_existing_results, workflow_versions_or_ids)
 	
 	if all_projects:
 		logger.info("Getting results for all projects in IRIDA. This may take a while.")
 		sistr_list = irida_results.get_sistr_results_all_projects()
 	else:
-		logger.info("Getting results for projects: " + str(projects)+". This may take a while.")
+		logger.info("Getting results for projects: " + str(projects) + ". This may take a while.")
 		sistr_list = irida_results.get_sistr_results_from_projects(projects)
 
 	total_sample_results=0
@@ -119,7 +121,9 @@ if __name__ == '__main__':
 			"\n\t" + appname + " -a -u irida-user -o out.xlsx"+
 			"\n\t\tExports all SISTR results from all projects to a file 'out.xlsx'"+
 			"\n\n\t" + appname + " -p 1 -p 2 -u irida-user -o out.xlsx"+
-			"\n\t\tExports SISTR results form projects [1,2] to a file 'out.xlsx'")
+			"\n\t\tExports SISTR results from projects [1,2] to a file 'out.xlsx'" +
+			"\n\n\t" + appname + " -p 1 -w 0.3 -w 0.2 -u irida-user -o out.xlsx" +
+			"\n\t\tExports only SISTR results from workflow versions 0.3 and 0.2 from project [1]")
 
 	parser.add_argument('--irida-url', action='store', dest='irida_url', help='The URL to the IRIDA instance.')
 	parser.add_argument('--client-id', action='store', dest='client_id', help='The client id for an IRIDA instance.')
@@ -136,6 +140,7 @@ if __name__ == '__main__':
 	parser.add_argument('-T', '--connection-timeout', action='store', dest='timeout', help='Connection timeout when getting results from IRIDA.')
 	parser.add_argument('-c', '--config', action='store', dest='config', help='Configuration file for IRIDA (overrides values in '+str(get_conf_files())+')')
 	parser.add_argument('-V', '--version', action='version', version='%(prog)s {}'.format(version.__version__))
+	parser.add_argument('-w', '--workflow', action='append', dest='workflow_versions_or_ids', default=None, help="Only include results of these workflow versions (or uuids) {} [all versions]".format(IridaSistrWorkflow.all_workflow_versions()))
 
 	if len(sys.argv)==1:
 		parser.print_help()

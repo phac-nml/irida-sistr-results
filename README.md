@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/phac-nml/irida-sistr-results.svg?branch=development)](https://travis-ci.org/phac-nml/irida-sistr-results)
+
 # IRIDA SISTR Results
 
 The IRIDA SISTR Results application enables the export of [SISTR][sistr-web] results that were run through [IRIDA][irida] (via the [sistr-cmd][sistr-cmd] application) to a spreadsheet. See the [IRIDA SISTR Pipeline][irida-sistr-pipeline] documentation for more details on the presentation of SISTR results in IRIDA.
@@ -7,7 +9,7 @@ The IRIDA SISTR Results application enables the export of [SISTR][sistr-web] res
 To export SISTR results from IRIDA to a spreadsheet, please run the following:
 
 ```bash
-irida-sistr-results.py -p 1 -p 2 -u irida-user -o out.xlsx
+irida-sistr-results -p 1 -p 2 -u irida-user -o out.xlsx
 ```
 
 This will log into the configured IRIDA instance using the username `irida-user` and export SISTR results for the projects with IDs 1 and 2 to a file `out.xlsx`.  See the [IRIDA Projects][irida-projects] documentation for more details on projects.
@@ -15,7 +17,7 @@ This will log into the configured IRIDA instance using the username `irida-user`
 Alternatively, instead of specifying individual projects you may use `-a` to export all projects.
 
 ```bash
-irida-sistr-results.py -a -u irida-user -o out.xlsx
+irida-sistr-results -a -u irida-user -o out.xlsx
 ```
 
 The exported file `out.xlsx` will look like the following:
@@ -25,7 +27,6 @@ The exported file `out.xlsx` will look like the following:
 This will list each sample in the given projects, as well as the associated SISTR results. The **QC Status** column will list one of **PASS**, **WARNING**, **FAIL**, or **MISSING** depending on the status of the results.  In particular, **MISSING** represents a sample with a missing SISTR result.
 
 In the case of multiple SISTR results per sample, IRIDA will load up that SISTR result which has a status of `PASS` that was run most recently for a particular sample.  To disable this behavior, please use `--exclude-user-existing-results`.
-
 
 ## Specify connection details
 
@@ -40,6 +41,25 @@ The connection details correspond to the details for an [IRIDA Client][irida-cli
 ## Include MISSING results
 
 To include results for **MISSING** samples you must re-run the data for these results in IRIDA and re-export the results to a table. To re-run in IRIDA please select the samples in question ([selecting samples by a text file][select-by-file] may be useful here) and resubmit these samples to the [SISTR Pipeline][irida-sistr-pipeline]. Please make sure to [Share pipeline results with a project][share-results-project], or you will not see the results.
+
+## Only include results from particular IRIDA/SISTR workflow verison
+
+You may restrict results to only come from a particular IRIDA/SISTR workflow version. For example:
+
+```bash
+irida-sistr-results -p 1 -w 0.3 -w 0.2 -u irida-user -o out.xlsx
+```
+
+This will list each sample in project **1**, only including those results from the SISTR workflow versions `0.3` or `0.2`.
+
+By default, results will come from any workflow version. A list of possible versions is shown when running `irida-sistr-results -h`.
+
+```
+  -w WORKFLOW_VERSIONS_OR_IDS, --workflow WORKFLOW_VERSIONS_OR_IDS
+                        Only include results of these workflow versions (or uuids) ['0.1', '0.2', '0.3'] [all versions]
+```
+
+You may also pass the workflow UUID to `--workflow` instead of the version.
 
 # Installation
 
@@ -82,14 +102,14 @@ irida-sistr-results.py | grep '^ *-c' -A 1
 # Usage
 
 ```
-usage: irida-sistr-results.py [-h] [--irida-url IRIDA_URL]
-                              [--client-id CLIENT_ID]
-                              [--client-secret CLIENT_SECRET] [-u USERNAME]
-                              [--password PASSWORD] [-v] [-p PROJECTS] [-a]
-                              [--output-tab TABULAR_FILE] [-o EXCEL_FILE]
-                              [--include-user-results]
-                              [--exclude-user-existing-results] [-T TIMEOUT]
-                              [-c CONFIG] [-V]
+usage: irida-sistr-results [-h] [--irida-url IRIDA_URL]
+                           [--client-id CLIENT_ID]
+                           [--client-secret CLIENT_SECRET] [-u USERNAME]
+                           [--password PASSWORD] [-v] [-p PROJECTS] [-a]
+                           [--output-tab TABULAR_FILE] [-o EXCEL_FILE]
+                           [--include-user-results]
+                           [--exclude-user-existing-results] [-T TIMEOUT]
+                           [-c CONFIG] [-V] [-w WORKFLOW_VERSIONS_OR_IDS]
 
 Compile SISTR results from an IRIDA instance into a table.
 
@@ -107,7 +127,8 @@ optional arguments:
   -v, --verbose         Turn on verbose logging.
   -p PROJECTS, --project PROJECTS
                         Projects to scan for SISTR results. If left blank will scan all projects the user has access to.
-  -a, --all-projects    Explicitly load results from all projects the user has access to.  Will ignore the values given in --project.
+  -a, --all-projects    Explicitly load results from all projects the user has access to.  Will ignore the values given
+                          in --project.
   --output-tab TABULAR_FILE, --to-tab-file TABULAR_FILE
                         Print results to tab-deliminited file.
   -o EXCEL_FILE, --output-excel EXCEL_FILE, --to-excel-file EXCEL_FILE
@@ -115,24 +136,31 @@ optional arguments:
   --include-user-results
                         Include SISTR analysis results run directly by the user.
   --exclude-user-existing-results
-                        If including user results, do not replace existing SISTR analysis that were automatically generated with user-run SISTR results.
+                        If including user results, do not replace existing SISTR analysis that were automatically
+                          generated with user-run SISTR results.
   -T TIMEOUT, --connection-timeout TIMEOUT
                         Connection timeout when getting results from IRIDA.
   -c CONFIG, --config CONFIG
-                        Configuration file for IRIDA (overrides values in ['/path/to/config.ini', '~/.local/share/irida-sistr-results/config.ini'])
+                        Configuration file for IRIDA (overrides values in 
+                          ['irida_sistr_results/etc/config.ini', '~/.local/share/irida-sistr-results/config.ini'])
   -V, --version         show program's version number and exit
+  -w WORKFLOW_VERSIONS_OR_IDS, --workflow WORKFLOW_VERSIONS_OR_IDS
+                        Only include results of these workflow versions (or uuids) ['0.1', '0.2', '0.3'] [all versions]
 
 Example:
-        irida-sistr-results.py -a -u irida-user -o out.xlsx
+        irida-sistr-results -a -u irida-user -o out.xlsx
                 Exports all SISTR results from all projects to a file 'out.xlsx'
 
-        irida-sistr-results.py -p 1 -p 2 -u irida-user -o out.xlsx
-                Exports SISTR results form projects [1,2] to a file 'out.xlsx'
+        irida-sistr-results -p 1 -p 2 -u irida-user -o out.xlsx
+                Exports SISTR results from projects [1,2] to a file 'out.xlsx'
+
+        irida-sistr-results -p 1 -w 0.3 -w 0.2 -u irida-user -o out.xlsx
+                Exports only SISTR results from workflow versions 0.3 and 0.2 from project [1]
 ```
 
 # Legal
 
-Copyright 2017 Government of Canada
+Copyright 2018 Government of Canada
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use
 this work except in compliance with the License. You may obtain a copy of the
