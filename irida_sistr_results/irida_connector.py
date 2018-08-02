@@ -13,17 +13,17 @@ class IridaConnector(object):
     """Low-level connections to the IRIDA REST API"""
 
     def __init__(self, client_id, client_secret, username, password, base_url, timeout):
-        """Creates a new object for connecting to the IRIDA REST API
+        """
+        Creates a new object for connecting to the IRIDA REST API
 
-        Args:
-            client_id:  The client_id for IRIDA.
-            client_secret:  The client secret for IRIDA.
-            username:  The username of the user for IRIDA.
-            password:  The password for the user.
-            base_url:  The base URL for IRIDA (minis the '/api' part)
-            timeout:  The maximum timeout for any connection to IRIDA.
+        :param client_id:  The client_id for IRIDA.
+        :param client_secret:  The client secret for IRIDA.
+        :param username:  The username of the user for IRIDA.
+        :param password:  The password for the user.
+        :param base_url:  The base URL for IRIDA (minis the '/api' part)
+        :param timeout:  The maximum timeout for any connection to IRIDA.
 
-        Returns: An object which can be used to connect to IRIDA.
+        :return: An object which can be used to connect to IRIDA.
         """
         base_url = base_url.rstrip('/')
         self._base_path = urlsplit(base_url).path
@@ -53,12 +53,12 @@ class IridaConnector(object):
         self.session = oauth_service.get_session(token)
 
     def get(self, path):
-        """A GET request to a particular path in IRIDA.
+        """
+        A GET request to a particular path in IRIDA.
 
-        Args:
-            path: The path to GET, minus the IRIDA url (e.g., '/projects').
+        :param path: The path to GET, minus the IRIDA url (e.g., '/projects').
 
-        Returns:  The result of rauth.OAuth2Service.get()
+        :return:  The result of rauth.OAuth2Service.get()
         """
         path = self._join_path(path)
         logger.debug("Getting path=" + path)
@@ -83,22 +83,21 @@ class IridaConnector(object):
                 return self._base_path + '/' + path
 
     def get_resources(self, path):
-        """GETs the resources from an IRIDA REST API endpoint (e.g., (get '/projects')['resources']
+        """
+        GETs the resources from an IRIDA REST API endpoint (e.g., (get '/projects')['resources']
 
-        Args:
-            path: The path to GET the resources.
+        :param path: The path to GET the resources.
 
-        Returns:  The ['resources'] part of the GET JSON response.
+        :return:  The ['resources'] part of the GET JSON response.
         """
         return self.get(path)['resources']
 
     def get_file(self, path):
         """GETs the file contents from an IRIDA REST API endpoint.
 
-        Args:
-            path: The path to GET the file.
+        :param path: The path to GET the file.
 
-        Returns:  The file contents.
+        :return:  The file contents.
         """
         return self.session.get(path, headers={'Accept': 'text/plain'}, timeout=self._timeout)
 

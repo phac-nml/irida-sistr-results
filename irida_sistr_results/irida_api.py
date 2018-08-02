@@ -85,9 +85,10 @@ class IridaAPI(object):
         return self.irida_connector.get('/api/projects/' + str(project_id))
 
     def get_user_projects(self):
-        """Gets information on all projects in IRIDA the current user has access to.
+        """
+        Gets information on all projects in IRIDA the current user has access to.
 
-        Returns:  The JSON results for all the user-accessible projects in IRIDA.
+        :return:  The JSON results for all the user-accessible projects in IRIDA.
         """
         return self.irida_connector.get_resources('/api/projects')
 
