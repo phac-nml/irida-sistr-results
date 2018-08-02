@@ -1,104 +1,106 @@
 import json
 import logging
+from urllib.parse import urlsplit
+
 from rauth import OAuth2Service
-from urllib.parse import urlsplit, urljoin
 
-LOGLEVEL_TRACE=5
+LOGLEVEL_TRACE = 5
 
-logger=logging.getLogger("irida_connector")
+logger = logging.getLogger("irida_connector")
+
 
 class IridaConnector(object):
-	"""Low-level connections to the IRIDA REST API"""
+    """Low-level connections to the IRIDA REST API"""
 
-	def __init__(self,client_id,client_secret,username,password,base_url,timeout):
-		"""Creates a new object for connecting to the IRIDA REST API
+    def __init__(self, client_id, client_secret, username, password, base_url, timeout):
+        """
+        Creates a new object for connecting to the IRIDA REST API
 
-		Args:
-		    client_id:  The client_id for IRIDA.
-		    client_secret:  The client secret for IRIDA.
-		    username:  The username of the user for IRIDA.
-		    password:  The password for the user.
-		    base_url:  The base URL for IRIDA (minis the '/api' part)
-		    timeout:  The maximum timeout for any connection to IRIDA.
+        :param client_id:  The client_id for IRIDA.
+        :param client_secret:  The client secret for IRIDA.
+        :param username:  The username of the user for IRIDA.
+        :param password:  The password for the user.
+        :param base_url:  The base URL for IRIDA (minis the '/api' part)
+        :param timeout:  The maximum timeout for any connection to IRIDA.
 
-		Returns: An object which can be used to connect to IRIDA.
-		"""
-		base_url=base_url.rstrip('/')
-		self._base_path=urlsplit(base_url).path
-		self._timeout=timeout
+        :return: An object which can be used to connect to IRIDA.
+        """
+        base_url = base_url.rstrip('/')
+        self._base_path = urlsplit(base_url).path
+        self._timeout = timeout
 
-		access_token_url=base_url+'/api/oauth/token'
-	
-		params = {
-			"data": {
-				"grant_type": "password",
-				"client_id": client_id,
-				"client_secret": client_secret,
-				"username": username,
-				"password": password
-			}
-		}
-		
-		oauth_service = OAuth2Service(
-			client_id=client_id,
-			client_secret=client_secret,
-			name="irida",
-			access_token_url=access_token_url,
-			base_url=base_url
-		)
-		
-		token=oauth_service.get_access_token(decoder=json.loads,**params)
-		self.session=oauth_service.get_session(token)
+        access_token_url = base_url + '/api/oauth/token'
 
-	def get(self,path):
-		"""A GET request to a particular path in IRIDA.
+        params = {
+            "data": {
+                "grant_type": "password",
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "username": username,
+                "password": password
+            }
+        }
 
-		Args:
-		    path: The path to GET, minus the IRIDA url (e.g., '/projects').
+        oauth_service = OAuth2Service(
+            client_id=client_id,
+            client_secret=client_secret,
+            name="irida",
+            access_token_url=access_token_url,
+            base_url=base_url
+        )
 
-		Returns:  The result of rauth.OAuth2Service.get()
-		"""
-		path=self._join_path(path)
-		logger.debug("Getting path="+path)
-		response=self.session.get(path,timeout=self._timeout)
+        token = oauth_service.get_access_token(decoder=json.loads, **params)
+        self.session = oauth_service.get_session(token)
 
-		if (response.ok):
-			self._log_json(response.json())
-			return response.json()['resource']
-		else:
-			response.raise_for_status()
+    def get(self, path):
+        """
+        A GET request to a particular path in IRIDA.
 
-	def _join_path(self,path):
-		if (self._base_path is None or self._base_path == ''):
-			return path
-		# If passed full URL like http://localhost/path, don't add on base_path
-		elif (urlsplit(path).scheme != ''):
-			return path
-		else:
-			if (path[0] == '/'):
-				return self._base_path + path
-			else:
-				return self._base_path + '/' + path
+        :param path: The path to GET, minus the IRIDA url (e.g., '/projects').
 
-	def get_resources(self,path):
-		"""GETs the resources from an IRIDA REST API endpoint (e.g., (get '/projects')['resources']
+        :return:  The result of rauth.OAuth2Service.get()
+        """
+        path = self._join_path(path)
+        logger.debug("Getting path=" + path)
+        response = self.session.get(path, timeout=self._timeout)
 
-		Args:
-		    path: The path to GET the resources.
+        if (response.ok):
+            self._log_json(response.json())
+            return response.json()['resource']
+        else:
+            response.raise_for_status()
 
-		Returns:  The ['resources'] part of the GET JSON response.
-		"""
-		return self.get(path)['resources']
+    def _join_path(self, path):
+        if (self._base_path is None or self._base_path == ''):
+            return path
+        # If passed full URL like http://localhost/path, don't add on base_path
+        elif (urlsplit(path).scheme != ''):
+            return path
+        else:
+            if (path[0] == '/'):
+                return self._base_path + path
+            else:
+                return self._base_path + '/' + path
 
-	def get_file(self, path):
-		"""GETs the file contents from an IRIDA REST API endpoint.
+    def get_resources(self, path):
+        """
+        GETs the resources from an IRIDA REST API endpoint (e.g., (get '/projects')['resources']
 
-		Args:
-		    path: The path to GET the file.
+        :param path: The path to GET the resources.
 
-		Returns:  The file contents.
-		"""
-		return self.session.get(path, headers={'Accept': 'text/plain'}, timeout=self._timeout)
+        :return:  The ['resources'] part of the GET JSON response.
+        """
+        return self.get(path)['resources']
 
-	def _log_json(self,json_obj):
-		logger.log(LOGLEVEL_TRACE,json.dumps(json_obj, sort_keys=True, separators=(',',':'), indent=4))
+    def get_file(self, path):
+        """
+        GETs the file contents from an IRIDA REST API endpoint.
+
+        :param path: The path to GET the file.
+
+        :return:  The file contents.
+        """
+        return self.session.get(path, headers={'Accept': 'text/plain'}, timeout=self._timeout)
+
+    def _log_json(self, json_obj):
+        logger.log(LOGLEVEL_TRACE, json.dumps(json_obj, sort_keys=True, separators=(',', ':'), indent=4))

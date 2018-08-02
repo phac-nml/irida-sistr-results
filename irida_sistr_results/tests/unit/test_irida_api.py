@@ -117,8 +117,9 @@ class IridaAPITest(unittest.TestCase):
     def test_get_sistr_submissions_for_project_both_workflows(self):
         self.connector.get_resources.return_value = self._create_user_results_workflow(
             ['92ecf046-ee09-4271-b849-7a82625d6b60', 'e8f9cc61-3264-48c6-81d9-02d9e84bccc7'])
-        sistr_results = self.irida_api.get_sistr_submissions_shared_to_project(1, ['92ecf046-ee09-4271-b849-7a82625d6b60',
-                                                                                   'e8f9cc61-3264-48c6-81d9-02d9e84bccc7'])
+        sistr_results = self.irida_api.get_sistr_submissions_shared_to_project(1,
+                                                                               ['92ecf046-ee09-4271-b849-7a82625d6b60',
+                                                                                'e8f9cc61-3264-48c6-81d9-02d9e84bccc7'])
         self.assertEqual([0, 1], sistr_results, "Should have correct identifiers")
 
     def test_update_sample_sistr_info_most_recent(self):
