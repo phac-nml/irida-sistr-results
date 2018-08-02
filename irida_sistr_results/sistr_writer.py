@@ -231,8 +231,8 @@ class SistrResultsWriter(object):
         sample_create_msg = ' using only samples created after ' + self.sample_created_min_date.strftime(
             '%Y-%m-%d %H:%M:%S') if self.sample_created_min_date else ''
         self._write_row([
-                            "Results generated from " + self.appname + " version=" + __version__ + " connecting to IRIDA=" + self.irida_url + " as user=" + self.username + " on date=" + datetime.now().strftime(
-                                '%Y-%m-%d %H:%M:%S') + sample_create_msg])
+            "Results generated from " + self.appname + " version=" + __version__ + " connecting to IRIDA=" + self.irida_url + " as user=" + self.username + " on date=" + datetime.now().strftime(
+                '%Y-%m-%d %H:%M:%S') + sample_create_msg])
 
 
 class SistrCsvWriter(SistrResultsWriter):
