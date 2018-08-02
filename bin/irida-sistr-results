@@ -110,12 +110,12 @@ def get_conf_files():
 
 
 def get_conf_files_plus(config_file):
-    """Gets a list of configuration file paths plus the passed config file.
+    """
+    Gets a list of configuration file paths plus the passed config file.
 
-    Args:
-        config_file:  The additional configuration file to include in this list.
+    :param config_file:  The additional configuration file to include in this list.
 
-    Returns:  The default configuration files plus the user-defined configuration file.
+    :return:  The default configuration files plus the user-defined configuration file.
     """
     l = get_conf_files()
     l.append(config_file)

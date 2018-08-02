@@ -12,12 +12,12 @@ class SistrResultsWriter(object):
     """Abstract class resonsible for writing SISTR results to a table format"""
 
     def __init__(self, irida_url, appname, username):
-        """Construct a new SistrResultsWriter object corresponding to the passed irida_url
+        """
+        Construct a new SistrResultsWriter object corresponding to the passed irida_url
 
-        Args:
-            irida_url: The URL to the IRIDA instance, used to insert URLs into the table
-            appname: The application name.
-            username: The name of the user generating these results.
+        :param irida_url: The URL to the IRIDA instance, used to insert URLs into the table
+        :param appname: The application name.
+        :param username: The name of the user generating these results.
         """
         __metaclass__ = abc.ABCMeta
         self.irida_url = irida_url
@@ -56,10 +56,10 @@ class SistrResultsWriter(object):
         return self.row
 
     def set_row(self, row):
-        """Sets the current row number
+        """
+        Sets the current row number
 
-        Args:
-            row: The new row number
+        :param row: The new row number
         """
         self.row = row
 
@@ -103,23 +103,23 @@ class SistrResultsWriter(object):
         return timestamp.strftime('%Y-%m-%d %H:%M:%S')
 
     def _get_header_index(self, title):
-        """Gets the particular index from the headers given the title.
+        """
+        Gets the particular index from the headers given the title.
 
-        Args:
-            title: The title of the header column.
+        :param title: The title of the header column.
 
-        Returns: The index into the header list.
+        :return: The index into the header list.
         """
         return self._get_header_list().index(title)
 
     def _get_row_list(self, project, result):
-        """Given the project number and result object, creates a list of relavent information to print per row.
+        """
+        Given the project number and result object, creates a list of relavent information to print per row.
 
-        Args:
-            project: The current project identifier.
-            result:  The current SistrInfo result object.
+        :param project: The current project identifier.
+        :param result:  The current SistrInfo result object.
 
-        Return: A list of relevant information for the row
+        :return: A list of relevant information for the row
         """
         return [
             project,
@@ -153,15 +153,14 @@ class SistrResultsWriter(object):
         ]
 
     def _get_no_results_row_list(self, project, result):
-        """Gets a list respresenting no/missing results for a sample.
-
-        Args:
-            project: The current project identifier.
-            result:  The current SistrInfo result object.
-
-        Return: A list of relevant information in the case of a no/missing result row.
         """
+        Gets a list respresenting no/missing results for a sample.
 
+        :param project: The current project identifier.
+        :param result:  The current SistrInfo result object.
+
+        :return: A list of relevant information in the case of a no/missing result row.
+        """
         return [
             project,
             result.get_sample_name(),
@@ -194,12 +193,12 @@ class SistrResultsWriter(object):
         ]
 
     def write(self, sistr_results):
-        """Writes out the results to an appropriate file with the appropriate format
-
-        Args:
-            sistr_results:  The SISTR results to write to a table.
         """
+        Writes out the results to an appropriate file with the appropriate format
 
+        :param sistr_results:  The SISTR results to write to a table.
+        :return: None
+        """
         self.set_row(0)
         self._write_header(self._get_header_list())
         self.set_row(1)
@@ -342,32 +341,32 @@ class SistrExcelWriter(SistrResultsWriter):
         self.percent_format = self.workbook.add_format({'num_format': '0.0%'})
 
     def _get_header_column_number(self, title):
-        """Gets the particular column number from the headers given the title.
+        """
+        Gets the particular column number from the headers given the title.
 
-        Args:
-            title: The title of the header column.
+        :param title: The title of the header column.
 
-        Returns: The column number (starting with 1) from the header list.
+        :return: The column number (starting with 1) from the header list.
         """
         return self._get_header_index(title) + 1
 
     def _get_header_column_letter(self, title):
-        """Gets the particular column letter from the headers given the title.
+        """
+        Gets the particular column letter from the headers given the title.
 
-        Args:
-            title: The title of the header column.
+        :param title: The title of the header column.
 
-        Returns: The column letter (starting with A) from the header list.
+        :return: The column letter (starting with A) from the header list.
         """
         return self._to_letter(self._get_header_index(title))
 
     def _range_stitle(self, title):
-        """Gets the particular column letter range from the headers given a single title.
+        """
+        Gets the particular column letter range from the headers given a single title.
 
-        Args:
-            title: The title of the header column.
+        :param title: The title of the header column.
 
-        Returns: The column range (e.g., A:A) from the header list.
+        :return: The column range (e.g., A:A) from the header list.
         """
         return self._range_title(title, title)
 
@@ -472,4 +471,5 @@ class SistrExcelWriter(SistrResultsWriter):
         self.worksheet.freeze_panes(1, 3)
 
     def close(self):
+        """Closes the workbook"""
         self.workbook.close()
