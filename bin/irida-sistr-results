@@ -28,13 +28,13 @@ user_conf_file = os.path.join(user_conf_dir, 'config.ini')
 logger = logging.getLogger("irida-sistr-results")
 
 def main(irida_url, client_id, client_secret, username, password, verbose, projects, tabular_file, excel_file,
-         include_user_results, exclude_user_existing_results, all_projects, timeout, config, workflow_versions):
+         include_user_results, exclude_user_existing_results, all_projects, timeout, config, workflow_versions_or_ids):
 	"""Main method connecting to IRIDA/writing SISTR results file."""
 	logging.info("Running " + appname + " version " + version.__version__)
 
 	connector = IridaConnector(client_id, client_secret, username, password, irida_url, timeout)
 	irida_api = IridaAPI(connector)
-	irida_results = IridaSistrResults(irida_api, include_user_results, not exclude_user_existing_results, workflow_versions)
+	irida_results = IridaSistrResults(irida_api, include_user_results, not exclude_user_existing_results, workflow_versions_or_ids)
 	
 	if all_projects:
 		logger.info("Getting results for all projects in IRIDA. This may take a while.")
@@ -140,7 +140,7 @@ if __name__ == '__main__':
 	parser.add_argument('-T', '--connection-timeout', action='store', dest='timeout', help='Connection timeout when getting results from IRIDA.')
 	parser.add_argument('-c', '--config', action='store', dest='config', help='Configuration file for IRIDA (overrides values in '+str(get_conf_files())+')')
 	parser.add_argument('-V', '--version', action='version', version='%(prog)s {}'.format(version.__version__))
-	parser.add_argument('-w', '--workflow-version', action='append', dest='workflow_versions', default=None, help="Only include results of these workflow version(s) {} [all versions]".format(IridaSistrWorkflow.all_workflow_versions()))
+	parser.add_argument('-w', '--workflow', action='append', dest='workflow_versions_or_ids', default=None, help="Only include results of these workflow versions (or uuids) {} [all versions]".format(IridaSistrWorkflow.all_workflow_versions()))
 
 	if len(sys.argv)==1:
 		parser.print_help()

@@ -7,21 +7,21 @@ logger=logging.getLogger("irida-sistr-results")
 class IridaSistrResults(object):
 	"""Class for constructing the top-level data structures mapping projects to lists of SISTR results."""
 
-	def __init__(self,irida_api,include_user_results,update_existing_with_user_results,sistr_workflow_versions=None):
+	def __init__(self, irida_api, include_user_results, update_existing_with_user_results, sistr_workflow_versions_or_ids=None):
 		"""Creates a new IridaSistrResults object.
 
 		Args:
 		    irida_api:  The IridaAPI object for connecting to IRIDA.
 		    include_user_results:  Whether or not to include all user-accessible results (or just automated SISTR results).
 		    update_existing_with_user_results:  Whether or not to update existing results with newer results run by a user.
-		    sistr_workflow_versions: A list of SISTR workflow versions of results to include.
+		    sistr_workflow_versions_or_ids: A list of SISTR workflow versions (or UUIDs) of results to include.
 
 		Returns:  A new IridaSistrResults object.
 		"""
 		self.irida_api=irida_api
 		self.include_user_results=include_user_results
 		self.update_existing_with_user_results=update_existing_with_user_results
-		self.sistr_workflow_ids = IridaSistrWorkflow.workflow_versions_to_ids(sistr_workflow_versions)
+		self.sistr_workflow_ids = IridaSistrWorkflow.workflow_ids_or_versions_to_ids(sistr_workflow_versions_or_ids)
 		self.sistr_results={}
 		self.sample_project={}
 

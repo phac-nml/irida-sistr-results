@@ -55,9 +55,11 @@ This will list each sample in project **1**, only including those results from t
 By default, results will come from any workflow version. A list of possible versions is shown when running `irida-sistr-results -h`.
 
 ```
-  -w WORKFLOW_VERSIONS, --workflow-version WORKFLOW_VERSIONS
-                        Only include results of these workflow version(s) ['0.1', '0.2', '0.3'] [all versions]
+  -w WORKFLOW_VERSIONS_OR_IDS, --workflow WORKFLOW_VERSIONS_OR_IDS
+                        Only include results of these workflow versions (or uuids) ['0.1', '0.2', '0.3'] [all versions]
 ```
+
+You may also pass the workflow UUID to `--workflow` instead of the version.
 
 # Installation
 
@@ -107,7 +109,7 @@ usage: irida-sistr-results [-h] [--irida-url IRIDA_URL]
                            [--output-tab TABULAR_FILE] [-o EXCEL_FILE]
                            [--include-user-results]
                            [--exclude-user-existing-results] [-T TIMEOUT]
-                           [-c CONFIG] [-V] [-w WORKFLOW_VERSIONS]
+                           [-c CONFIG] [-V] [-w WORKFLOW_VERSIONS_OR_IDS]
 
 Compile SISTR results from an IRIDA instance into a table.
 
@@ -142,8 +144,8 @@ optional arguments:
                         Configuration file for IRIDA (overrides values in 
                           ['irida_sistr_results/etc/config.ini', '~/.local/share/irida-sistr-results/config.ini'])
   -V, --version         show program's version number and exit
-  -w WORKFLOW_VERSIONS, --workflow-version WORKFLOW_VERSIONS
-                        Only include results of these workflow version(s) ['0.1', '0.2', '0.3'] [all versions]
+  -w WORKFLOW_VERSIONS_OR_IDS, --workflow WORKFLOW_VERSIONS_OR_IDS
+                        Only include results of these workflow versions (or uuids) ['0.1', '0.2', '0.3'] [all versions]
 
 Example:
         irida-sistr-results -a -u irida-user -o out.xlsx

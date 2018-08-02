@@ -1,3 +1,5 @@
+import uuid
+
 """
 Functionality for conversion between workflow ids and versions.
 """
@@ -46,6 +48,27 @@ class IridaSistrWorkflow:
         :return: The list of ids.
         """
         return None if workflow_versions is None else [cls.workflow_version_to_id(x) for x in workflow_versions]
+
+    @classmethod
+    def workflow_ids_or_versions_to_ids(cls, workflow_versions_or_ids):
+        """
+        Converts a list of IRIDA workflow versions or ids to a list of ids.
+        :param workflow_versions: The list of workflow versions or ids.
+        :return: The list of workflow ids.
+        """
+        if workflow_versions_or_ids is None:
+            return None
+        else:
+            ids_list = []
+            for value in workflow_versions_or_ids:
+                try:
+                    id = uuid.UUID('{' + value + '}')
+                    ids_list.append(str(id))
+                except ValueError:
+                    id = cls.workflow_version_to_id(value)
+                    ids_list.append(id)
+
+            return ids_list
 
     @classmethod
     def all_workflow_versions(cls):
