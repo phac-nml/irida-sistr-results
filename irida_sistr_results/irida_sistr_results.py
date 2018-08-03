@@ -9,7 +9,7 @@ class IridaSistrResults(object):
     """Class for constructing the top-level data structures mapping projects to lists of SISTR results."""
 
     def __init__(self, irida_api, include_user_results, update_existing_with_user_results,
-                 sistr_workflow_versions_or_ids=None):
+                 sistr_workflow_versions_or_ids=None, sample_created_min_date=None):
         """
         Creates a new IridaSistrResults object.
 
@@ -17,6 +17,7 @@ class IridaSistrResults(object):
         :param include_user_results:  Whether or not to include all user-accessible results (or just automated SISTR results).
         :param update_existing_with_user_results:  Whether or not to update existing results with newer results run by a user.
         :param sistr_workflow_versions_or_ids: A list of SISTR workflow versions (or UUIDs) of results to include.
+        :param sample_created_min_date: The minimum (oldest) sample created date for samples to include results for.
 
         :return:  A new IridaSistrResults object.
         """
@@ -26,6 +27,7 @@ class IridaSistrResults(object):
         self.sistr_workflow_ids = IridaSistrWorkflow.workflow_ids_or_versions_to_ids(sistr_workflow_versions_or_ids)
         self.sistr_results = {}
         self.sample_project = {}
+        self.sample_created_min_date = sample_created_min_date
 
     def get_sistr_results_all_projects(self):
         """
@@ -100,7 +102,8 @@ class IridaSistrResults(object):
             raise Exception("Error: project " + str(project_id) + " already examined")
 
         self.sistr_results[project_id] = {}
-        project_results = self.irida_api.get_sistr_results_for_project(project_id, self.sistr_workflow_ids)
+        project_results = self.irida_api.get_sistr_results_for_project(project_id, self.sistr_workflow_ids,
+                                                                       self.sample_created_min_date)
 
         for result in project_results:
             if result is None:
@@ -114,7 +117,7 @@ class IridaSistrResults(object):
                     self.sample_project[sample_id] = [project_id]
 
     def _timef(self, timestamp):
-        return timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        return timestamp.isoformat(sep=' ')
 
     def _result_to_sample_log_string(self, r1, r2, word):
         return "Sample [name=" + r1.get_sample_name() + ", id=" + str(

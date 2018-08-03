@@ -4,3 +4,4 @@
 /etc/config.ini
 /.idea
 /irida_sistr_results.egg-info
+/.eggs

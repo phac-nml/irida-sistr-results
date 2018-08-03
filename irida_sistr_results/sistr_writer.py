@@ -1,5 +1,6 @@
 import abc
 import csv
+from collections import OrderedDict
 from datetime import datetime
 from operator import methodcaller
 
@@ -11,13 +12,14 @@ from irida_sistr_results.version import __version__
 class SistrResultsWriter(object):
     """Abstract class resonsible for writing SISTR results to a table format"""
 
-    def __init__(self, irida_url, appname, username):
+    def __init__(self, irida_url, appname, username, sample_created_min_date=None):
         """
         Construct a new SistrResultsWriter object corresponding to the passed irida_url
 
         :param irida_url: The URL to the IRIDA instance, used to insert URLs into the table
         :param appname: The application name.
         :param username: The name of the user generating these results.
+        :param sample_created_min_date: The minimum date for including samples.
         """
         __metaclass__ = abc.ABCMeta
         self.irida_url = irida_url
@@ -25,6 +27,7 @@ class SistrResultsWriter(object):
         self.username = username
         self.row = 0
         self.end_of_project = False
+        self.sample_created_min_date = sample_created_min_date
 
     @abc.abstractmethod
     def _write_row(self, row):
@@ -47,6 +50,9 @@ class SistrResultsWriter(object):
     def _is_end_of_project(self):
         return self.end_of_project
 
+    def _finish(self):
+        return
+
     def close(self):
         """Closes writing to a file"""
         return
@@ -64,9 +70,10 @@ class SistrResultsWriter(object):
         self.row = row
 
     def _get_header_list(self):
-        """Get a list of header titles for the table
+        """
+        Get a list of header titles for the table
 
-        Return: A list of header titles.
+        :return: A list of header titles.
         """
         return [
             'Project ID',
@@ -100,7 +107,7 @@ class SistrResultsWriter(object):
         ]
 
     def _format_timestamp(self, timestamp):
-        return timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        return timestamp.isoformat(sep=' ')
 
     def _get_header_index(self, title):
         """
@@ -192,6 +199,23 @@ class SistrResultsWriter(object):
             None,
         ]
 
+    def _get_irida_sistr_run_info(self):
+        """
+        Gets information about the run of this irida-sistr-results script.
+        :return: Information in the form of a Dict of key/value pairs.
+        """
+        info = OrderedDict()
+        info['appname'] = self.appname
+        info['version'] = __version__
+        info['irida_url'] = self.irida_url
+        info['username'] = self.username
+        info['app_run_date'] = datetime.now()
+
+        if self.sample_created_min_date:
+            info['sample_created_min_date'] = self.sample_created_min_date
+
+        return info
+
     def write(self, sistr_results):
         """
         Writes out the results to an appropriate file with the appropriate format
@@ -225,21 +249,29 @@ class SistrResultsWriter(object):
             self._set_end_of_project(False)
 
         self._formatting()
-
-        self._write_row([
-            "Results generated from " + self.appname + " version=" + __version__ + " connecting to IRIDA=" + self.irida_url + " as user=" + self.username + " on date=" + datetime.now().strftime(
-                '%Y-%m-%d %H:%M:%S')])
+        self._finish()
 
 
 class SistrCsvWriter(SistrResultsWriter):
     """An abstact writer used to create CSV/tab-delimited files"""
 
-    def __init__(self, irida_url, appname, username, out_file):
-        super(SistrCsvWriter, self).__init__(irida_url, appname, username)
+    def __init__(self, irida_url, appname, username, out_file, sample_created_min_date=None):
+        super(SistrCsvWriter, self).__init__(irida_url, appname, username, sample_created_min_date)
         out_file_h = open(out_file, 'w')
         self.writer = csv.writer(out_file_h, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
     def _write_header(self, header):
+        run_info = self._get_irida_sistr_run_info()
+        sample_create_msg = ' using only samples created after ' + self.sample_created_min_date.isoformat(
+            sep=' ') if 'sample_created_min_date' in run_info else ''
+        self._write_row([
+            "# Results generated from {} version={} connecting to IRIDA={} as user={} on date={} {}".format(
+                run_info['appname'],
+                run_info['version'],
+                run_info['irida_url'],
+                run_info['username'],
+                run_info['app_run_date'],
+                sample_create_msg)])
         self.writer.writerow(header)
 
     def _write_row(self, row):
@@ -278,62 +310,13 @@ class SistrCsvWriter(SistrResultsWriter):
         ]
 
 
-class SistrCsvWriterShort(SistrCsvWriter):
-    """Creates a shortened version of the results in a tab-delimited format"""
-
-    def __init__(self, irida_url, appname, username, out_file):
-        super(SistrCsvWriterShort, self).__init__(irida_url, appname, username, out_file)
-
-    def _get_header_list(self):
-        return [
-            'Project ID',
-            'Sample Name',
-            'QC Status',
-            'Created Date',
-            'Serovar (overall)',
-            'Serovar (antigen)',
-            'Serovar (cgMLST)',
-            'cgMLST Alleles Matching',
-            'cgMLST Percent Matching',
-            'IRIDA Analysis URL'
-        ]
-
-    def _get_row_list(self, project, result):
-        return [
-            project,
-            result.get_sample_name(),
-            result.get_qc_status(),
-            result.get_sample_created_date(),
-            result.get_serovar(),
-            result.get_serovar_antigen(),
-            result.get_serovar_cgmlst(),
-            result.get_cgmlst_matching_alleles(),
-            "{0:.1f}".format(result.get_cgmlst_matching_proportion() * 100) + '%',
-            result.get_submission_url(self.irida_url)
-        ]
-
-    def _get_no_results_row_list(self, project, result):
-        return [
-            project,
-            result.get_sample_name(),
-            result.get_qc_status(),
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None
-        ]
-
-
 class SistrExcelWriter(SistrResultsWriter):
     """A writer object for writing SISTR results to an excel spreadsheet"""
 
-    def __init__(self, irida_url, appname, username, out_file):
-        super(SistrExcelWriter, self).__init__(irida_url, appname, username)
+    def __init__(self, irida_url, appname, username, out_file, sample_created_min_date=None):
+        super(SistrExcelWriter, self).__init__(irida_url, appname, username, sample_created_min_date)
         self.workbook = xlsxwriter.Workbook(out_file, {'default_date_format': 'yyyy/mm/dd'})
-        self.worksheet = self.workbook.add_worksheet()
+        self.worksheet = self.workbook.add_worksheet('Data')
         self.index_of_cgmlst_percent = self._get_header_list().index('cgMLST Percent Matching')
         self.index_of_date_formats = [self._get_header_list().index('Sample Created Date'),
                                       self._get_header_list().index('IRIDA Analysis Date')
@@ -438,7 +421,10 @@ class SistrExcelWriter(SistrResultsWriter):
         if (self._is_end_of_project()):
             return self.workbook.add_format({'num_format': 'yyyy/mm/dd', 'bottom': 5})
         else:
-            return self.workbook.add_format({'num_format': 'yyyy/mm/dd'})
+            return self._get_default_date_format()
+
+    def _get_default_date_format(self):
+        return self.workbook.add_format({'num_format': 'yyyy/mm/dd'})
 
     def _get_regular_format(self):
         if (self._is_end_of_project()):
@@ -469,6 +455,29 @@ class SistrExcelWriter(SistrResultsWriter):
                                                        'value': '"MISSING"',
                                                        'format': format_missing})
         self.worksheet.freeze_panes(1, 3)
+
+    def _finish(self):
+        info_worksheet = self.workbook.add_worksheet('Settings')
+        info = self._get_irida_sistr_run_info()
+
+        date_format = self._get_default_date_format()
+
+        row = 0
+        for k, v in info.items():
+            info_worksheet.write(row, 0, k)
+
+            if k == 'app_run_date' or k == 'sample_created_min_date':
+                info_worksheet.write(row, 1, v, date_format)
+            else:
+                info_worksheet.write(row, 1, v)
+            info_worksheet.write(row, 1, v)
+            row += 1
+
+        bold_format = self.workbook.add_format()
+        bold_format.set_bold()
+
+        info_worksheet.set_column('A:A', 25, bold_format)
+        info_worksheet.set_column('B:B', 20)
 
     def close(self):
         """Closes the workbook"""

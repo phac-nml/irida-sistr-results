@@ -1,5 +1,6 @@
 import json
 import logging
+from datetime import datetime
 
 from requests.exceptions import HTTPError
 
@@ -91,7 +92,7 @@ class IridaAPI(object):
         """
         return self.irida_connector.get_resources('/api/projects')
 
-    def get_sistr_results_for_project(self, project, sistr_workflow_ids):
+    def get_sistr_results_for_project(self, project, sistr_workflow_ids, sample_created_date_min):
         """
         Gets information on all SISTR results in a project (that is, automated SISTR results).
         This is structured as a list of objects (on per sample) containing a SampleSistrInfo object if available and whether
@@ -99,6 +100,7 @@ class IridaAPI(object):
 
         :param project:  The project to search through.
         :param sistr_workflow_ids: A list of SISTR workflow ids, None for all workflow results.
+        :param sample_created_date_min: Only return results for samples created after this date.
         :return: A list of dictionaries containing SampleSistrInfo objects and/or indicators for missing results.
         """
         sistr_results = []
@@ -106,6 +108,12 @@ class IridaAPI(object):
         sistr_results_for_project = self.irida_connector.get_resources('/api/projects/' + str(project) + '/samples')
 
         for sample in sistr_results_for_project:
+            if self._created_since(sample, sample_created_date_min):
+                logger.debug("sample [id=%s, name=%s, createdDate=%s] created before %s, skipping.",
+                             sample['identifier'], sample['sampleName'], sample['createdDate'],
+                             sample_created_date_min)
+                continue
+
             sample_pairs = self.irida_connector.get_resources('/api/samples/' + sample['identifier'] + '/pairs')
 
             sistr_info = SampleSistrInfo.create_empty_info(sample)
@@ -122,10 +130,15 @@ class IridaAPI(object):
                                 sample['identifier'])
                         else:
                             new_sistr_info = self.get_sistr_info_from_submission(sistr)
-                            sistr_info = self._update_sample_sistr_info(sistr_info, new_sistr_info, sistr_workflow_ids)
+                            sistr_info = self._update_sample_sistr_info(sistr_info, new_sistr_info,
+                                                                        sistr_workflow_ids)
 
-            sistr_results.append(sistr_info)
+                sistr_results.append(sistr_info)
         return sistr_results
+
+    def _created_since(self, sample, sample_created_date_min):
+        return sample_created_date_min and datetime.fromtimestamp(
+            sample['createdDate'] / 1000) < sample_created_date_min
 
     def _update_sample_sistr_info(self, curr_sistr_info, new_sistr_info, sistr_workflow_ids):
         if sistr_workflow_ids is None or new_sistr_info.get_submission_workflow_id() in sistr_workflow_ids:
