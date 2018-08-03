@@ -93,7 +93,8 @@ class IridaConnector(object):
         return self.get(path)['resources']
 
     def get_file(self, path):
-        """GETs the file contents from an IRIDA REST API endpoint.
+        """
+        GETs the file contents from an IRIDA REST API endpoint.
 
         :param path: The path to GET the file.
 

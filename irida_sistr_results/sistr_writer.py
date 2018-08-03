@@ -12,7 +12,8 @@ class SistrResultsWriter(object):
     """Abstract class resonsible for writing SISTR results to a table format"""
 
     def __init__(self, irida_url, appname, username, sample_created_min_date=None):
-        """Construct a new SistrResultsWriter object corresponding to the passed irida_url
+        """
+        Construct a new SistrResultsWriter object corresponding to the passed irida_url
 
         :param irida_url: The URL to the IRIDA instance, used to insert URLs into the table
         :param appname: The application name.
@@ -162,7 +163,6 @@ class SistrResultsWriter(object):
 
         :return: A list of relevant information in the case of a no/missing result row.
         """
-
         return [
             project,
             result.get_sample_name(),
@@ -200,7 +200,6 @@ class SistrResultsWriter(object):
 
         :param sistr_results:  The SISTR results to write to a table.
         """
-
         self.set_row(0)
         self._write_header(self._get_header_list())
         self.set_row(1)
@@ -475,4 +474,5 @@ class SistrExcelWriter(SistrResultsWriter):
         self.worksheet.freeze_panes(1, 3)
 
     def close(self):
+        """Closes the workbook"""
         self.workbook.close()
