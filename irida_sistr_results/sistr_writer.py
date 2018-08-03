@@ -116,7 +116,8 @@ class SistrResultsWriter(object):
         return self._get_header_list().index(title)
 
     def _get_row_list(self, project, result):
-        """Given the project number and result object, creates a list of relavent information to print per row.
+        """
+        Given the project number and result object, creates a list of relavent information to print per row.
 
         :param project: The current project identifier.
         :param result:  The current SistrInfo result object.
@@ -199,6 +200,7 @@ class SistrResultsWriter(object):
         Writes out the results to an appropriate file with the appropriate format
 
         :param sistr_results:  The SISTR results to write to a table.
+        :return: None
         """
         self.set_row(0)
         self._write_header(self._get_header_list())
