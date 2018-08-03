@@ -33,21 +33,20 @@ logger = logging.getLogger("irida-sistr-results")
 
 def main(irida_url, client_id, client_secret, username, password, verbose, projects, tabular_file, excel_file,
          include_user_results, exclude_user_existing_results, all_projects, timeout, config, workflow_versions_or_ids,
-         samples_created_since_days):
+         samples_created_since):
     """Main method connecting to IRIDA/writing SISTR results file."""
     logging.info("Running " + appname + " version " + version.__version__)
 
-    sample_created_min_date = None
-    if samples_created_since_days:
-        sample_created_min_date = datetime.now() - timedelta(days=samples_created_since_days)
-        logger.debug(
-            '--samples-created-since-days set to [%s] days ago, only including samples created more recent than %s',
-            samples_created_since_days, sample_created_min_date)
+    samples_created_min_date = get_samples_created_min_date(samples_created_since)
+
+    if samples_created_min_date is not None:
+        logger.debug('--samples-created-since set to [%s], only including samples created more recent than %s',
+                     samples_created_since, samples_created_min_date)
 
     connector = IridaConnector(client_id, client_secret, username, password, irida_url, timeout)
     irida_api = IridaAPI(connector)
     irida_results = IridaSistrResults(irida_api, include_user_results, not exclude_user_existing_results,
-                                      workflow_versions_or_ids, sample_created_min_date)
+                                      workflow_versions_or_ids, samples_created_min_date)
 
     if all_projects:
         logger.info("Getting results for all projects in IRIDA. This may take a while.")
@@ -78,8 +77,8 @@ def main(irida_url, client_id, client_secret, username, password, verbose, proje
                 logger.error("Somehow got wrong qc info '" + result.get_qc_status() + "'")
 
     proj_string = 'projects' if (total_projects > 1) else 'project'
-    sample_created_string = ' created more recently than ' + sample_created_min_date.isoformat(sep=' ',
-                                                                                               timespec='seconds') if sample_created_min_date else ''
+    sample_created_string = ' created more recently than ' + samples_created_min_date.isoformat(sep=' ',
+                                                                                                timespec='seconds') if samples_created_min_date else ''
     logger.info("Done getting SISTR results\n")
     logger.info("Examined %s samples in %s %s%s with status", total_sample_results, total_projects, proj_string,
                 sample_created_string)
@@ -89,16 +88,33 @@ def main(irida_url, client_id, client_secret, username, password, verbose, proje
     logger.info("MISSING: " + str(missing_sample_results))
 
     if tabular_file is not None:
-        writer = SistrCsvWriter(irida_url, appname, username, tabular_file, sample_created_min_date)
+        writer = SistrCsvWriter(irida_url, appname, username, tabular_file, samples_created_min_date)
         writer.write(sistr_list)
         writer.close()
         logger.info("Wrote results to file " + tabular_file)
 
     if excel_file is not None:
-        writer = SistrExcelWriter(irida_url, appname, username, excel_file, sample_created_min_date)
+        writer = SistrExcelWriter(irida_url, appname, username, excel_file, samples_created_min_date)
         writer.write(sistr_list)
         writer.close()
         logger.info("Wrote results to file " + excel_file)
+
+
+def get_samples_created_min_date(samples_created_since):
+    """
+    Parses out the samples_created_since string into a particular minimum date.
+    :param samples_created_since: The string to parse.
+    :return: The minimum samples created date.
+    """
+    if samples_created_since is None:
+        return None
+
+    try:
+        samples_created_min_date = datetime.strptime(samples_created_since, '%Y-%m-%d')
+    except ValueError:
+        samples_created_min_date = datetime.now() - timedelta(days=float(samples_created_since))
+
+    return samples_created_min_date
 
 
 def setup_user_data_dir():
@@ -174,10 +190,9 @@ if __name__ == '__main__':
     parser.add_argument('-w', '--workflow', action='append', dest='workflow_versions_or_ids', default=None,
                         help="Only include results of these workflow versions (or uuids) {} [all versions]".format(
                             IridaSistrWorkflow.all_workflow_versions()))
-    parser.add_argument('-d', '--samples-created-since-days', action='store', dest='samples_created_since_days',
-                        type=float,
+    parser.add_argument('-d', '--samples-created-since', action='store', dest='samples_created_since',
                         default=None,
-                        help='Only include samples created more recently than this many days ago [Include all samples]')
+                        help='Only include samples created more recently than this date (in format YYYY-MM-DD) or this many days ago (as a number) [Include all samples]')
 
     if len(sys.argv) == 1:
         parser.print_help()

@@ -63,13 +63,19 @@ You may also pass the workflow UUID to `--workflow` instead of the version.
 
 ## Only include results from samples within a particular time period
 
-You may restrict results to only come from a particular number of days ago using `-d|--samples-created-since-days`.  For example:
+You may restrict results to only come from a particular number of days ago using `-d|--samples-created-since`.  For example:
 
 ```bash
 irida-sistr-results -p 1 -d 7 -u irida-user -o out.xlsx
 ```
 
 This will export results from project 1, only exporting those results from samples created in the past 7 days.
+
+```bash
+irida-sistr-results -p 1 -d 2018-01-02 -u irida-user -o out.xlsx
+```
+
+This will export results from project 1, only exporting those results from samples created since January 2, 2018.
 
 # Installation
 
@@ -120,7 +126,7 @@ usage: irida-sistr-results [-h] [--irida-url IRIDA_URL]
                            [--include-user-results]
                            [--exclude-user-existing-results] [-T TIMEOUT]
                            [-c CONFIG] [-V] [-w WORKFLOW_VERSIONS_OR_IDS]
-                           [-d SAMPLES_CREATED_SINCE_DAYS]
+                           [-d SAMPLES_CREATED_SINCE]
 
 Compile SISTR results from an IRIDA instance into a table.
 
@@ -157,8 +163,8 @@ optional arguments:
   -V, --version         show program's version number and exit
   -w WORKFLOW_VERSIONS_OR_IDS, --workflow WORKFLOW_VERSIONS_OR_IDS
                         Only include results of these workflow versions (or uuids) ['0.1', '0.2', '0.3'] [all versions]
-  -d SAMPLES_CREATED_SINCE_DAYS, --samples-created-since-days SAMPLES_CREATED_SINCE_DAYS
-                        Only include samples created more recently than this many days ago [Include all samples]
+  -d SAMPLES_CREATED_SINCE, --samples-created-since SAMPLES_CREATED_SINCE
+                        Only include samples created more recently than this date (in format YYYY-MM-DD) or this many days ago (as a number) [Include all samples]
 
 Example:
         irida-sistr-results -a -u irida-user -o out.xlsx
