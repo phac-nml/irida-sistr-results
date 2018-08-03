@@ -131,7 +131,7 @@ class IridaAPI(object):
                             else:
                                 new_sistr_info = self.get_sistr_info_from_submission(sistr)
                                 sistr_info = self._update_sample_sistr_info(sistr_info, new_sistr_info,
-                                                                            sistr_workflow_id)
+                                                                            sistr_workflow_ids)
 
                 sistr_results.append(sistr_info)
         return sistr_results
