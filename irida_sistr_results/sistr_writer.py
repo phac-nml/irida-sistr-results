@@ -107,7 +107,7 @@ class SistrResultsWriter(object):
         ]
 
     def _format_timestamp(self, timestamp):
-        return timestamp.isoformat(sep=' ', timespec='seconds')
+        return timestamp.isoformat(sep=' ')
 
     def _get_header_index(self, title):
         """
@@ -262,8 +262,8 @@ class SistrCsvWriter(SistrResultsWriter):
 
     def _write_header(self, header):
         run_info = self._get_irida_sistr_run_info()
-        sample_create_msg = ' using only samples created after ' + self.sample_created_min_date.isoformat(sep=' ',
-                                                                                                          timespec='seconds') if 'sample_created_min_date' in run_info else ''
+        sample_create_msg = ' using only samples created after ' + self.sample_created_min_date.isoformat(
+            sep=' ') if 'sample_created_min_date' in run_info else ''
         self._write_row([
             "# Results generated from {} version={} connecting to IRIDA={} as user={} on date={} {}".format(
                 run_info['appname'],

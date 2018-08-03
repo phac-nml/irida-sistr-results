@@ -117,7 +117,7 @@ class IridaSistrResults(object):
                     self.sample_project[sample_id] = [project_id]
 
     def _timef(self, timestamp):
-        return timestamp.isoformat(sep=' ', timespec='seconds')
+        return timestamp.isoformat(sep=' ')
 
     def _result_to_sample_log_string(self, r1, r2, word):
         return "Sample [name=" + r1.get_sample_name() + ", id=" + str(

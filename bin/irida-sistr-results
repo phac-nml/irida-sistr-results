@@ -77,8 +77,8 @@ def main(irida_url, client_id, client_secret, username, password, verbose, proje
                 logger.error("Somehow got wrong qc info '" + result.get_qc_status() + "'")
 
     proj_string = 'projects' if (total_projects > 1) else 'project'
-    sample_created_string = ' created more recently than ' + samples_created_min_date.isoformat(sep=' ',
-                                                                                                timespec='seconds') if samples_created_min_date else ''
+    sample_created_string = ' created more recently than ' + samples_created_min_date.isoformat(
+        sep=' ') if samples_created_min_date else ''
     logger.info("Done getting SISTR results\n")
     logger.info("Examined %s samples in %s %s%s with status", total_sample_results, total_projects, proj_string,
                 sample_created_string)
