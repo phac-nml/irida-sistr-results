@@ -103,7 +103,7 @@ class SistrResultsWriter(object):
         ]
 
     def _format_timestamp(self, timestamp):
-        return timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        return timestamp.isoformat(sep=' ', timespec='seconds')
 
     def _get_header_index(self, title):
         """
@@ -229,11 +229,17 @@ class SistrResultsWriter(object):
 
         self._formatting()
 
-        sample_create_msg = ' using only samples created after ' + self.sample_created_min_date.strftime(
-            '%Y-%m-%d %H:%M:%S') if self.sample_created_min_date else ''
+        sample_create_msg = ' using only samples created after ' + self.sample_created_min_date.isoformat(sep=' ',
+                                                                                                          timespec='seconds') if self.sample_created_min_date else ''
         self._write_row([
-            "Results generated from " + self.appname + " version=" + __version__ + " connecting to IRIDA=" + self.irida_url + " as user=" + self.username + " on date=" + datetime.now().strftime(
-                '%Y-%m-%d %H:%M:%S') + sample_create_msg])
+            "Results generated from {} version={} connecting to IRIDA={} as user={} on date={} {}".format(self.appname,
+                                                                                                          __version__,
+                                                                                                          self.irida_url,
+                                                                                                          self.username,
+                                                                                                          datetime.now().isoformat(
+                                                                                                              sep=' ',
+                                                                                                              timespec='seconds'),
+                                                                                                          sample_create_msg)])
 
 
 class SistrCsvWriter(SistrResultsWriter):
