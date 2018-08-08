@@ -13,6 +13,7 @@ from datetime import timedelta
 import appdirs
 
 from irida_sistr_results import version
+from irida_sistr_results.CommandParseException import CommandParseException
 from irida_sistr_results.irida_api import IridaAPI
 from irida_sistr_results.irida_connector import IridaConnector
 from irida_sistr_results.irida_sistr_results import IridaSistrResults
@@ -39,11 +40,20 @@ def main(irida_url, client_id, client_secret, username, password, verbose, proje
 
     samples_created_min_date = get_samples_created_min_date(samples_created_since)
 
+    if password is None:
+        password = getpass.getpass(
+            'Enter password for user="' + arg_dict['username'] + '" on IRIDA="' + arg_dict['irida_url'] + '": ')
+
     if samples_created_min_date is not None:
         logger.debug('--samples-created-since set to [%s], only including samples created more recent than %s',
                      samples_created_since, samples_created_min_date)
 
-    connector = IridaConnector(client_id, client_secret, username, password, irida_url, timeout)
+    try:
+        connector = IridaConnector(client_id, client_secret, username, password, irida_url, timeout)
+    except KeyError as e:
+        raise CommandParseException(
+            "Error when connecting to IRIDA URL=[{}], Username=[{}], ClientID=[{}]. Perhaps the username/password or client_id/client_secret are invalid?".format(
+                irida_url, username, client_id)) from e
     irida_api = IridaAPI(connector)
     irida_results = IridaSistrResults(irida_api, include_user_results, not exclude_user_existing_results,
                                       workflow_versions_or_ids, samples_created_min_date)
@@ -112,7 +122,12 @@ def get_samples_created_min_date(samples_created_since):
     try:
         samples_created_min_date = datetime.strptime(samples_created_since, '%Y-%m-%d')
     except ValueError:
-        samples_created_min_date = datetime.now() - timedelta(days=float(samples_created_since))
+        try:
+            samples_created_min_date = datetime.now() - timedelta(days=float(samples_created_since))
+        except ValueError as e:
+            raise CommandParseException(
+                "Could not parse -d|--samples-created-since [{}], please enter either a number representing so many days ago (e.g., 7), or a minimum date in the format YYYY-MM-DD".format(
+                    samples_created_since)) from e
 
     return samples_created_min_date
 
@@ -259,12 +274,13 @@ if __name__ == '__main__':
 
         if (arg_dict['projects'] is None and arg_dict['all_projects'] is None):
             raise Exception("No --project or --all-projects parameter found.")
-
-        if arg_dict['password'] is None:
-            arg_dict['password'] = getpass.getpass(
-                'Enter password for user="' + arg_dict['username'] + '" on IRIDA="' + arg_dict['irida_url'] + '": ')
     except Exception as e:
         logging.error(e)
         sys.exit(1)
 
-    main(**arg_dict)
+    try:
+        main(**arg_dict)
+    except CommandParseException as e:
+        logger.debug(e, exc_info=True)
+        logger.error(e)
+        sys.exit(1)
