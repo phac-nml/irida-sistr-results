@@ -8,6 +8,14 @@ LOGLEVEL_TRACE = 5
 
 logger = logging.getLogger("irida_connector")
 
+def decode_access_token(s):
+    """
+    Used to decode the access token.
+    :param s: The input bytes.
+    :return: A dictionary.
+    """
+    return json.loads(s.decode('utf-8'))
+
 
 class IridaConnector(object):
     """Low-level connections to the IRIDA REST API"""
@@ -49,7 +57,7 @@ class IridaConnector(object):
             base_url=base_url
         )
 
-        token = oauth_service.get_access_token(decoder=json.loads, **params)
+        token = oauth_service.get_access_token(decoder=decode_access_token, **params)
         self.session = oauth_service.get_session(token)
 
     def get(self, path):
