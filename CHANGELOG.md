@@ -1,3 +1,10 @@
+# Version 0.5.0
+
+* Changed code to conform better to Python packaging standards.
+* Moved location of `config.ini` file so it gets properly included in Python package.
+* Add command-line option `--workflow` to export SISTR results from specific versions of the IRIDA SISTR workflow.
+* Add command-line option `--samples-created-since` to export SISTR results from samples created since a particular date or the passed number of days ago.
+
 # Version  0.4.0
 
 * Fixed performance when exporting SISTR results.  Previously, user-run SISTR analyses where included in the results by default, but these took a significant amount of time to export.  Now, only automated SISTR analyses and analyses shared with a project are included by default in the final results.  To revert back to the previous behaviour, you will have to use the `--include-user-results` command-line option.
