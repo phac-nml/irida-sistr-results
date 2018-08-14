@@ -33,7 +33,7 @@ In the case of multiple SISTR results per sample, IRIDA will load up that SISTR 
 If the connection details to the IRIDA instance have not already been configured, then you may run this command as:
 
 ```bash
-irida-sistr-results.py --irida-url [http://irida-url] --client-id [id] --client-secret [secret] -p 1 -p 2 -u irida-user -o out.xlsx
+irida-sistr-results --irida-url [http://irida-url] --client-id [id] --client-secret [secret] -p 1 -p 2 -u irida-user -o out.xlsx
 ```
 
 The connection details correspond to the details for an [IRIDA Client][irida-client] which you will need to have been provied.
@@ -106,12 +106,12 @@ pip install git+https://github.com/phac-nml/irida-sistr-results
 
 Instead of providing all the configuration details on the command line, they can be specified in a configuration file.  This file can be placed in `~/.local/share/irida-sistr-results/config.ini`, or passed on the command-line (using `--config`).
 
-To quickly set up configuration, please run `irida-sistr-results.py` once to copy a template to `~/.local/share/irida-sistr-results/config.ini` and fill in the information within the [config.ini][config] file (the `url`, `client_id`, and `client_secret` connection details).
+To quickly set up configuration, please run `irida-sistr-results` once to copy a template to `~/.local/share/irida-sistr-results/config.ini` and fill in the information within the [config.ini][config] file (the `url`, `client_id`, and `client_secret` connection details).
 
 To see a list of all locations where you can place the `config.ini` file, you may check the usage statement for the `-c, --config` information.  E.g.,
 
 ```
-irida-sistr-results.py | grep '^ *-c' -A 1
+irida-sistr-results | grep '^ *-c' -A 1
     Configuration file for IRIDA (overrides values in ['/path1/config.ini', '/path2/config.ini'])
 ```
 
