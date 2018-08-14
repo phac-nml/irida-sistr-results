@@ -89,7 +89,7 @@ The easiest way to get IRIDA SISTR Results is through [Bioconda][]:
 conda install -c bioconda irida-sistr-results
 ```
 
-# PyPI/Pip
+## PyPI/Pip
 
 You can also install `irida-sistr-results` from [PyPI][pypi-irida] using `pip`:
 
