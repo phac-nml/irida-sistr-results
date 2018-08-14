@@ -1,4 +1,6 @@
 [![Build Status](https://travis-ci.org/phac-nml/irida-sistr-results.svg?branch=development)](https://travis-ci.org/phac-nml/irida-sistr-results)
+[![pypi](https://badge.fury.io/py/irida-sistr-results.svg)](https://pypi.python.org/pypi/irida-sistr-results/)
+[![conda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg)](https://anaconda.org/bioconda/irida-sistr-results)
 
 # IRIDA SISTR Results
 
@@ -85,6 +87,14 @@ The easiest way to get IRIDA SISTR Results is through [Bioconda][]:
 
 ```
 conda install -c bioconda irida-sistr-results
+```
+
+# PyPI/Pip
+
+You can also install `irida-sistr-results` from [PyPI][pypi-irida] using `pip`:
+
+```bash
+pip install irida-sistr-results
 ```
 
 ## Latest code
@@ -206,3 +216,4 @@ specific language governing permissions and limitations under the License.
 [select-by-file]: https://irida.corefacility.ca/documentation/user/user/samples/#filtering-and-selecting-by-file
 [share-results-project]: https://irida.corefacility.ca/documentation/user/user/pipelines/#sharing-pipeline-results
 [irida-github-release]: https://github.com/phac-nml/irida/releases
+[pypi-irida]: https://pypi.python.org/pypi/irida-sistr-results/
