@@ -17,6 +17,7 @@ class IridaAPI(object):
 
     def __init__(self, irida_connector):
         self.irida_connector = irida_connector
+        self.reportable_serovars = ['Heidelberg']
 
     def _get_rel_from_links(self, rel, links):
         href = None
@@ -188,7 +189,7 @@ class IridaAPI(object):
             sistr_info['sample'] = None
         sistr_info['submission'] = submission
 
-        return SampleSistrInfo(sistr_info)
+        return SampleSistrInfo(sistr_info, self.reportable_serovars)
 
     def get_sistr_submissions_for_user(self, sistr_workflow_ids=None):
         """

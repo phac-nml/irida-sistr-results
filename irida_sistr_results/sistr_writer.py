@@ -78,6 +78,7 @@ class SistrResultsWriter(object):
         return [
             'Project ID',
             'Sample Name',
+            'Reportable Serovar Status',
             'QC Status',
             'Serovar (overall)',
             'Serovar (antigen)',
@@ -131,6 +132,7 @@ class SistrResultsWriter(object):
         return [
             project,
             result.get_sample_name(),
+            result.get_reportable_serovar_status(),
             result.get_qc_status(),
             result.get_serovar(),
             result.get_serovar_antigen(),
@@ -171,6 +173,7 @@ class SistrResultsWriter(object):
         return [
             project,
             result.get_sample_name(),
+            result.get_reportable_serovar_status(),
             result.get_qc_status(),
             None,
             None,
@@ -281,6 +284,7 @@ class SistrCsvWriter(SistrResultsWriter):
         return [
             project,
             result.get_sample_name(),
+            result.get_reportable_serovar_status(),
             result.get_qc_status(),
             result.get_serovar(),
             result.get_serovar_antigen(),
@@ -359,7 +363,12 @@ class SistrExcelWriter(SistrResultsWriter):
         return self._to_range_col_1(scol, ecol)
 
     def _to_letter(self, col):
-        return chr(ord('A') + col)
+        MAX_ALPHABET = 26
+
+        if col < MAX_ALPHABET:
+            return chr(ord('A') + col)
+        else:
+            return self._to_letter(int(col / MAX_ALPHABET)) + self._to_letter(int(col % MAX_ALPHABET))
 
     def _to_range_col(self, start_col, end_col):
         return self._to_letter(start_col) + ':' + self._to_letter(end_col)
@@ -454,7 +463,7 @@ class SistrExcelWriter(SistrResultsWriter):
                                                        'criteria': '==',
                                                        'value': '"MISSING"',
                                                        'format': format_missing})
-        self.worksheet.freeze_panes(1, 3)
+        self.worksheet.freeze_panes(1, 4)
 
     def _finish(self):
         info_worksheet = self.workbook.add_worksheet('Settings')
