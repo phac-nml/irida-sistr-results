@@ -55,7 +55,7 @@ class SampleSistrInfo(object):
             return serovar_cgmlst
 
     def get_reportable_serovar_status(self):
-        if self.has_sistr_results() and self.get_serovar() in self.reportable_serovars:
+        if self.has_sistr_results() and self.is_qc_pass() and self.get_serovar() in self.reportable_serovars:
             return 'PASS'
         else:
             return 'FAIL'
@@ -71,6 +71,9 @@ class SampleSistrInfo(object):
 
     def get_o_antigen(self):
         return self._get_sistr()['o_antigen']
+
+    def is_qc_pass(self):
+        return self.get_qc_status() == 'PASS'
 
     def get_qc_status(self):
         return 'MISSING' if (not self.has_sistr_results()) else self._get_sistr()['qc_status']
