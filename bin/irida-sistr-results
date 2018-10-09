@@ -10,15 +10,20 @@ import sys
 from datetime import datetime
 from datetime import timedelta
 
+import pandas as pd
+
 import appdirs
 
 from irida_sistr_results import version
 from irida_sistr_results.CommandParseException import CommandParseException
+from irida_sistr_results import irida_api
 from irida_sistr_results.irida_api import IridaAPI
 from irida_sistr_results.irida_connector import IridaConnector
 from irida_sistr_results.irida_sistr_results import IridaSistrResults
 from irida_sistr_results.irida_sistr_workflow import IridaSistrWorkflow
 from irida_sistr_results.sistr_writer import SistrCsvWriter, SistrExcelWriter
+
+REPORTABLE_SEROVARS_FILE = os.path.join(os.path.dirname(irida_api.__file__), 'data', 'reportable_serovars.tsv')
 
 conf_dir = os.path.join(os.path.dirname(os.path.realpath(version.__file__)), 'etc')
 appname = os.path.basename(__file__)
@@ -54,7 +59,13 @@ def main(irida_url, client_id, client_secret, username, password, verbose, proje
         raise CommandParseException(
             "Error when connecting to IRIDA URL=[{}], Username=[{}], ClientID=[{}]. Perhaps the username/password or client_id/client_secret are invalid?".format(
                 irida_url, username, client_id)) from e
-    irida_api = IridaAPI(connector)
+
+    reportable_serovars = pd.read_table(REPORTABLE_SEROVARS_FILE)
+    serovar_list = reportable_serovars['#serovar'].tolist()
+    if not serovar_list:
+        raise Exception("Error, serovar_table_file=[{}] is empty".format(REPORTABLE_SEROVARS_FILE))
+
+    irida_api = IridaAPI(connector, serovar_list)
     irida_results = IridaSistrResults(irida_api, include_user_results, not exclude_user_existing_results,
                                       workflow_versions_or_ids, samples_created_min_date)
 

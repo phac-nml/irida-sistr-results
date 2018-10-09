@@ -446,23 +446,35 @@ class SistrExcelWriter(SistrResultsWriter):
         format_warning = self.workbook.add_format({'bg_color': '#FCF8E3'})
         format_fail = self.workbook.add_format({'bg_color': '#F2DEDE'})
         format_missing = self.workbook.add_format({'bg_color': '#BBBBBB'})
-        form_range = self._to_range_row('QC Status', 1, self.get_row())
-        self.worksheet.conditional_format(form_range, {'type': 'cell',
+        format_range_qc_status = self._to_range_row('QC Status', 1, self.get_row())
+        format_range_reportable = self._to_range_row('Reportable Serovar Status', 1, self.get_row())
+
+        self.worksheet.conditional_format(format_range_qc_status, {'type': 'cell',
                                                        'criteria': '==',
                                                        'value': '"PASS"',
                                                        'format': format_pass})
-        self.worksheet.conditional_format(form_range, {'type': 'cell',
+        self.worksheet.conditional_format(format_range_qc_status, {'type': 'cell',
                                                        'criteria': '==',
                                                        'value': '"WARNING"',
                                                        'format': format_warning})
-        self.worksheet.conditional_format(form_range, {'type': 'cell',
+        self.worksheet.conditional_format(format_range_qc_status, {'type': 'cell',
                                                        'criteria': '==',
                                                        'value': '"FAIL"',
                                                        'format': format_fail})
-        self.worksheet.conditional_format(form_range, {'type': 'cell',
+        self.worksheet.conditional_format(format_range_qc_status, {'type': 'cell',
                                                        'criteria': '==',
                                                        'value': '"MISSING"',
                                                        'format': format_missing})
+
+        self.worksheet.conditional_format(format_range_reportable, {'type': 'cell',
+                                                       'criteria': '==',
+                                                       'value': '"PASS"',
+                                                       'format': format_pass})
+        self.worksheet.conditional_format(format_range_reportable, {'type': 'cell',
+                                                       'criteria': '==',
+                                                       'value': '"FAIL"',
+                                                       'format': format_fail})
+
         self.worksheet.freeze_panes(1, 4)
 
     def _finish(self):
