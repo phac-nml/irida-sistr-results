@@ -10,13 +10,12 @@ import sys
 from datetime import datetime
 from datetime import timedelta
 
+import appdirs
 import pandas as pd
 
-import appdirs
-
+from irida_sistr_results import irida_api
 from irida_sistr_results import version
 from irida_sistr_results.CommandParseException import CommandParseException
-from irida_sistr_results import irida_api
 from irida_sistr_results.irida_api import IridaAPI
 from irida_sistr_results.irida_connector import IridaConnector
 from irida_sistr_results.irida_sistr_results import IridaSistrResults
