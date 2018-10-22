@@ -37,8 +37,8 @@ logger = logging.getLogger("irida-sistr-results")
 
 
 def main(irida_url, client_id, client_secret, username, password, verbose, projects, tabular_file, excel_file,
-         include_user_results, exclude_user_existing_results, all_projects, timeout, config, workflow_versions_or_ids,
-         samples_created_since):
+         include_user_results, exclude_user_existing_results, reportable_serovars_file, all_projects, timeout, config,
+         workflow_versions_or_ids, samples_created_since):
     """Main method connecting to IRIDA/writing SISTR results file."""
     logging.info("Running " + appname + " version " + version.__version__)
 
@@ -59,10 +59,7 @@ def main(irida_url, client_id, client_secret, username, password, verbose, proje
             "Error when connecting to IRIDA URL=[{}], Username=[{}], ClientID=[{}]. Perhaps the username/password or client_id/client_secret are invalid?".format(
                 irida_url, username, client_id)) from e
 
-    reportable_serovars = pd.read_table(REPORTABLE_SEROVARS_FILE)
-    serovar_list = reportable_serovars['#serovar'].tolist()
-    if not serovar_list:
-        raise Exception("Error, serovar_table_file=[{}] is empty".format(REPORTABLE_SEROVARS_FILE))
+    serovar_list = read_serovar_list(reportable_serovars_file)
 
     irida_api = IridaAPI(connector, serovar_list)
     irida_results = IridaSistrResults(irida_api, include_user_results, not exclude_user_existing_results,
@@ -119,6 +116,18 @@ def main(irida_url, client_id, client_secret, username, password, verbose, proje
         writer.close()
         logger.info("Wrote results to file " + excel_file)
 
+def read_serovar_list(file):
+    """
+    Reads in the serovar list table from the given file.
+    :param file: The file containing the serovar list.
+    :return: A list containing the reportable serovars.
+    """
+    reportable_serovars = pd.read_table(file)
+    serovar_list = reportable_serovars['serovar'].tolist()
+    if not serovar_list:
+        raise Exception("Error, serovar_table_file=[{}] is empty".format(REPORTABLE_SEROVARS_FILE))
+
+    return serovar_list
 
 def get_samples_created_min_date(samples_created_since):
     """
@@ -207,6 +216,8 @@ if __name__ == '__main__':
                         help='Include SISTR analysis results run directly by the user.')
     parser.add_argument('--exclude-user-existing-results', action='store_true', dest='exclude_user_existing_results',
                         help='If including user results, do not replace existing SISTR analysis that were automatically generated with user-run SISTR results.')
+    parser.add_argument('--reportable-serovars-file', action='store', dest='reportable_serovars_file',
+                        default=REPORTABLE_SEROVARS_FILE, help='The reportable serovars file [{}].'.format(REPORTABLE_SEROVARS_FILE))
     parser.add_argument('-T', '--connection-timeout', action='store', dest='timeout',
                         help='Connection timeout when getting results from IRIDA.')
     parser.add_argument('-c', '--config', action='store', dest='config',
