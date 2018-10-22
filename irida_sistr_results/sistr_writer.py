@@ -12,13 +12,14 @@ from irida_sistr_results.version import __version__
 class SistrResultsWriter(object):
     """Abstract class resonsible for writing SISTR results to a table format"""
 
-    def __init__(self, irida_url, appname, username, sample_created_min_date=None):
+    def __init__(self, irida_url, appname, username, include_reportable_status=True, sample_created_min_date=None):
         """
         Construct a new SistrResultsWriter object corresponding to the passed irida_url
 
         :param irida_url: The URL to the IRIDA instance, used to insert URLs into the table
         :param appname: The application name.
         :param username: The name of the user generating these results.
+        :param include_reportable_status: Whether or not to include the reportable status to output.
         :param sample_created_min_date: The minimum date for including samples.
         """
         __metaclass__ = abc.ABCMeta
@@ -27,6 +28,7 @@ class SistrResultsWriter(object):
         self.username = username
         self.row = 0
         self.end_of_project = False
+        self.include_reportable_status = include_reportable_status
         self.sample_created_min_date = sample_created_min_date
 
     @abc.abstractmethod
@@ -75,10 +77,15 @@ class SistrResultsWriter(object):
 
         :return: A list of header titles.
         """
-        return [
+        header_list = [
             'Project ID',
-            'Sample Name',
-            'Reportable Serovar Status',
+            'Sample Name'
+        ]
+
+        if self.include_reportable_status:
+            header_list.append('Reportable Serovar Status')
+
+        header_list.extend([
             'QC Status',
             'Serovar (overall)',
             'Serovar (antigen)',
@@ -105,7 +112,9 @@ class SistrResultsWriter(object):
             'IRIDA Analysis Date',
             'IRIDA Workflow Version',
             'IRIDA Workflow ID',
-        ]
+        ])
+
+        return header_list
 
     def _format_timestamp(self, timestamp):
         return timestamp.isoformat(sep=' ')
@@ -129,10 +138,15 @@ class SistrResultsWriter(object):
 
         :return: A list of relevant information for the row
         """
-        return [
+        row_list = [
             project,
-            result.get_sample_name(),
-            result.get_reportable_serovar_status(),
+            result.get_sample_name()
+            ]
+
+        if self.include_reportable_status:
+            row_list.append(result.get_reportable_serovar_status())
+
+        row_list.extend([
             result.get_qc_status(),
             result.get_serovar(),
             result.get_serovar_antigen(),
@@ -159,7 +173,9 @@ class SistrResultsWriter(object):
             result.get_submission_created_date(),
             result.get_submission_workflow_version(),
             result.get_submission_workflow_id(),
-        ]
+        ])
+
+        return row_list
 
     def _get_no_results_row_list(self, project, result):
         """
@@ -170,10 +186,15 @@ class SistrResultsWriter(object):
 
         :return: A list of relevant information in the case of a no/missing result row.
         """
-        return [
+        row_list = [
             project,
             result.get_sample_name(),
-            result.get_reportable_serovar_status(),
+            ]
+
+        if self.include_reportable_status:
+            row_list.append(result.get_reportable_serovar_status())
+
+        row_list.extend([
             result.get_qc_status(),
             None,
             None,
@@ -200,7 +221,9 @@ class SistrResultsWriter(object):
             None,
             None,
             None,
-        ]
+        ])
+
+        return row_list
 
     def _get_irida_sistr_run_info(self):
         """
@@ -258,8 +281,8 @@ class SistrResultsWriter(object):
 class SistrCsvWriter(SistrResultsWriter):
     """An abstact writer used to create CSV/tab-delimited files"""
 
-    def __init__(self, irida_url, appname, username, out_file, sample_created_min_date=None):
-        super(SistrCsvWriter, self).__init__(irida_url, appname, username, sample_created_min_date)
+    def __init__(self, irida_url, appname, username, out_file, include_reportable_status=True, sample_created_min_date=None):
+        super(SistrCsvWriter, self).__init__(irida_url, appname, username, include_reportable_status, sample_created_min_date)
         out_file_h = open(out_file, 'w')
         self.writer = csv.writer(out_file_h, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
@@ -281,10 +304,15 @@ class SistrCsvWriter(SistrResultsWriter):
         self.writer.writerow(row)
 
     def _get_row_list(self, project, result):
-        return [
+        row_list = [
             project,
-            result.get_sample_name(),
-            result.get_reportable_serovar_status(),
+            result.get_sample_name()
+            ]
+
+        if self.include_reportable_status:
+            row_list.append(result.get_reportable_serovar_status())
+
+        row_list.extend([
             result.get_qc_status(),
             result.get_serovar(),
             result.get_serovar_antigen(),
@@ -311,14 +339,16 @@ class SistrCsvWriter(SistrResultsWriter):
             result.get_submission_created_date(),
             result.get_submission_workflow_version(),
             result.get_submission_workflow_id(),
-        ]
+        ])
+
+        return row_list
 
 
 class SistrExcelWriter(SistrResultsWriter):
     """A writer object for writing SISTR results to an excel spreadsheet"""
 
-    def __init__(self, irida_url, appname, username, out_file, sample_created_min_date=None):
-        super(SistrExcelWriter, self).__init__(irida_url, appname, username, sample_created_min_date)
+    def __init__(self, irida_url, appname, username, out_file, include_reportable_status=True, sample_created_min_date=None):
+        super(SistrExcelWriter, self).__init__(irida_url, appname, username, include_reportable_status, sample_created_min_date)
         self.workbook = xlsxwriter.Workbook(out_file, {'default_date_format': 'yyyy/mm/dd'})
         self.worksheet = self.workbook.add_worksheet('Data')
         self.index_of_cgmlst_percent = self._get_header_list().index('cgMLST Percent Matching')
@@ -447,7 +477,6 @@ class SistrExcelWriter(SistrResultsWriter):
         format_fail = self.workbook.add_format({'bg_color': '#F2DEDE'})
         format_missing = self.workbook.add_format({'bg_color': '#BBBBBB'})
         format_range_qc_status = self._to_range_row('QC Status', 1, self.get_row())
-        format_range_reportable = self._to_range_row('Reportable Serovar Status', 1, self.get_row())
 
         self.worksheet.conditional_format(format_range_qc_status, {'type': 'cell',
                                                                    'criteria': '==',
@@ -466,16 +495,19 @@ class SistrExcelWriter(SistrResultsWriter):
                                                                    'value': '"MISSING"',
                                                                    'format': format_missing})
 
-        self.worksheet.conditional_format(format_range_reportable, {'type': 'cell',
-                                                                    'criteria': '==',
-                                                                    'value': '"PASS"',
-                                                                    'format': format_pass})
-        self.worksheet.conditional_format(format_range_reportable, {'type': 'cell',
-                                                                    'criteria': '==',
-                                                                    'value': '"FAIL"',
-                                                                    'format': format_fail})
-
-        self.worksheet.freeze_panes(1, 4)
+        if self.include_reportable_status:
+            format_range_reportable = self._to_range_row('Reportable Serovar Status', 1, self.get_row())
+            self.worksheet.conditional_format(format_range_reportable, {'type': 'cell',
+                                                                        'criteria': '==',
+                                                                        'value': '"PASS"',
+                                                                        'format': format_pass})
+            self.worksheet.conditional_format(format_range_reportable, {'type': 'cell',
+                                                                        'criteria': '==',
+                                                                        'value': '"FAIL"',
+                                                                        'format': format_fail})
+            self.worksheet.freeze_panes(1, 4)
+        else:
+            self.worksheet.freeze_panes(1, 3)
 
     def _finish(self):
         info_worksheet = self.workbook.add_worksheet('Settings')
