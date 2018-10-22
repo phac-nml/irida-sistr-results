@@ -60,6 +60,9 @@ class SampleSistrInfo(object):
         else:
             return 'FAIL'
 
+    def is_reportable_serovar(self):
+        return self.get_reportable_serovar_status() == 'PASS'
+
     def get_serogroup(self):
         return self._get_sistr()['serogroup']
 

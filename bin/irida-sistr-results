@@ -78,6 +78,7 @@ def main(irida_url, client_id, client_secret, username, password, verbose, proje
     warn_sample_results = 0
     fail_sample_results = 0
     total_projects = 0
+    total_reportable = 0
     for proj in sistr_list.keys():
         total_projects += 1
         for result in sistr_list[proj].values():
@@ -93,6 +94,9 @@ def main(irida_url, client_id, client_secret, username, password, verbose, proje
             else:
                 logger.error("Somehow got wrong qc info '" + result.get_qc_status() + "'")
 
+            if result.is_reportable_serovar():
+                total_reportable += 1
+
     proj_string = 'projects' if (total_projects > 1) else 'project'
     sample_created_string = ' created more recently than ' + samples_created_min_date.isoformat(
         sep=' ') if samples_created_min_date else ''
@@ -103,6 +107,7 @@ def main(irida_url, client_id, client_secret, username, password, verbose, proje
     logger.info("WARN:    " + str(warn_sample_results))
     logger.info("FAIL:    " + str(fail_sample_results))
     logger.info("MISSING: " + str(missing_sample_results))
+    logger.info("Of these a total of %s are considered as reportable", total_reportable)
 
     if tabular_file is not None:
         writer = SistrCsvWriter(irida_url, appname, username, tabular_file, samples_created_min_date)
