@@ -427,7 +427,7 @@ class SistrExcelWriter(SistrResultsWriter):
             col += 1
 
         self.worksheet.set_column(self._range_stitle('Project ID'), 15)
-        self.worksheet.set_column(self._range_title('Sample Name', 'Serogroup'), 20)
+        self.worksheet.set_column(self._range_title('Sample Name', 'Serogroup'), 25)
         self.worksheet.set_column(self._range_stitle('H1'), 10)
         self.worksheet.set_column(self._range_stitle('H2'), 10)
         self.worksheet.set_column(self._range_title('O-antigen', 'cgMLST Subspecies'), 20)
@@ -505,9 +505,7 @@ class SistrExcelWriter(SistrResultsWriter):
                                                                         'criteria': '==',
                                                                         'value': '"FAIL"',
                                                                         'format': format_fail})
-            self.worksheet.freeze_panes(1, 4)
-        else:
-            self.worksheet.freeze_panes(1, 3)
+        self.worksheet.freeze_panes(1, 3)
 
     def _finish(self):
         info_worksheet = self.workbook.add_worksheet('Settings')
