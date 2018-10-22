@@ -63,6 +63,10 @@ class SampleSistrInfo(object):
     def is_reportable_serovar(self):
         return self.get_reportable_serovar_status() == 'PASS'
 
+    def get_reportable_status_numerical(self):
+        """Gets numerical value of reportable status, used for sorting"""
+        return ['FAIL', 'PASS'].index(self.get_reportable_serovar_status())
+
     def get_serogroup(self):
         return self._get_sistr()['serogroup']
 

@@ -261,6 +261,11 @@ class SistrResultsWriter(object):
             sistr_results_sorted = sorted(sistr_results_project.values(), key=methodcaller('get_sample_name'))
             sistr_results_sorted = sorted(sistr_results_sorted, key=methodcaller('get_qc_status_numerical'),
                                           reverse=True)
+
+            if self.include_reportable_status:
+                sistr_results_sorted = sorted(sistr_results_sorted, key=methodcaller('get_reportable_status_numerical'),
+                                              reverse=True)
+
             for index, result in enumerate(sistr_results_sorted):
                 # last element in this list
                 if (index == len(sistr_results_sorted) - 1):
