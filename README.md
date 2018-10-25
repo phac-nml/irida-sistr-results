@@ -243,3 +243,4 @@ specific language governing permissions and limitations under the License.
 [pypi-irida]: https://pypi.python.org/pypi/irida-sistr-results/
 [reportable-serovar-table.png]: images/reportable-serovar-table.png
 [reportable_serovars.tsv]: irida_sistr_results/data/reportable_serovars.tsv
+
