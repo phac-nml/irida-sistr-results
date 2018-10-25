@@ -1,3 +1,8 @@
+# Version 0.6.0 (in development)
+
+* Added additional column to report **Reportable Serovar Status** used to indicate serovars that are considered as reportable by SISTR.
+    * Disable with `--exclude-reportable-status`. Override list of reportable serovars with `--reportable-serovars-file`.
+
 # Version 0.5.0
 
 * Changed code to conform better to Python packaging standards.
