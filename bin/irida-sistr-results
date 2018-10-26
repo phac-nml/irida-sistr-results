@@ -112,20 +112,39 @@ def main(irida_url, client_id, client_secret, username, password, verbose, proje
     if not exclude_reportable_status:
         logger.info("Of these a total of %s are considered as reportable", total_reportable)
 
+    command_line = get_command_line_string()
+
     if tabular_file is not None:
-        writer = SistrCsvWriter(irida_url, appname, username, tabular_file, not exclude_reportable_status,
+        writer = SistrCsvWriter(irida_url, appname, command_line, username, tabular_file, not exclude_reportable_status,
                                 samples_created_min_date)
         writer.write(sistr_list)
         writer.close()
         logger.info("Wrote results to file " + tabular_file)
 
     if excel_file is not None:
-        writer = SistrExcelWriter(irida_url, appname, username, excel_file, not exclude_reportable_status,
+        writer = SistrExcelWriter(irida_url, appname, command_line, username, excel_file, not exclude_reportable_status,
                                   samples_created_min_date)
         writer.write(sistr_list)
         writer.close()
         logger.info("Wrote results to file " + excel_file)
 
+def get_command_line_string():
+    """
+    Gets the command line string.
+
+    :return: The command-line as a string.
+    """
+    PASSWORD_NAME = '--password'
+
+    command_line_list=sys.argv[:]
+
+    try:
+        password_index = command_line_list.index(PASSWORD_NAME)
+        command_line_list[password_index+1]='*****'
+    except ValueError:
+        pass
+
+    return ' '.join(command_line_list)
 
 def read_serovar_list(file):
     """

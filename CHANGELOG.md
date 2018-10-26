@@ -2,6 +2,7 @@
 
 * Added additional column to report **Reportable Serovar Status** used to indicate serovars that are considered as reportable by SISTR.
     * Disable with `--exclude-reportable-status`. Override list of reportable serovars with `--reportable-serovars-file`.
+* Saving the command-line string to the exported file.
 
 # Version 0.5.0
 

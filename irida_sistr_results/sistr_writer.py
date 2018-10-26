@@ -12,12 +12,13 @@ from irida_sistr_results.version import __version__
 class SistrResultsWriter(object):
     """Abstract class resonsible for writing SISTR results to a table format"""
 
-    def __init__(self, irida_url, appname, username, include_reportable_status=True, sample_created_min_date=None):
+    def __init__(self, irida_url, appname, command_line, username, include_reportable_status=True, sample_created_min_date=None):
         """
         Construct a new SistrResultsWriter object corresponding to the passed irida_url
 
         :param irida_url: The URL to the IRIDA instance, used to insert URLs into the table
         :param appname: The application name.
+        :param command_line: The command line string used by the application.
         :param username: The name of the user generating these results.
         :param include_reportable_status: Whether or not to include the reportable status to output.
         :param sample_created_min_date: The minimum date for including samples.
@@ -25,6 +26,7 @@ class SistrResultsWriter(object):
         __metaclass__ = abc.ABCMeta
         self.irida_url = irida_url
         self.appname = appname
+        self.command_line = command_line
         self.username = username
         self.row = 0
         self.end_of_project = False
@@ -233,6 +235,7 @@ class SistrResultsWriter(object):
         info = OrderedDict()
         info['appname'] = self.appname
         info['version'] = __version__
+        info['command_line'] = self.command_line
         info['irida_url'] = self.irida_url
         info['username'] = self.username
         info['app_run_date'] = datetime.now()
@@ -286,9 +289,9 @@ class SistrResultsWriter(object):
 class SistrCsvWriter(SistrResultsWriter):
     """An abstact writer used to create CSV/tab-delimited files"""
 
-    def __init__(self, irida_url, appname, username, out_file, include_reportable_status=True,
+    def __init__(self, irida_url, appname, command_line, username, out_file, include_reportable_status=True,
                  sample_created_min_date=None):
-        super(SistrCsvWriter, self).__init__(irida_url, appname, username, include_reportable_status,
+        super(SistrCsvWriter, self).__init__(irida_url, appname, command_line, username, include_reportable_status,
                                              sample_created_min_date)
         out_file_h = open(out_file, 'w')
         self.writer = csv.writer(out_file_h, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -305,6 +308,7 @@ class SistrCsvWriter(SistrResultsWriter):
                 run_info['username'],
                 run_info['app_run_date'],
                 sample_create_msg)])
+        self._write_row(["# Using command [{}]".format(run_info['command_line'])])
         self.writer.writerow(header)
 
     def _write_row(self, row):
@@ -354,9 +358,9 @@ class SistrCsvWriter(SistrResultsWriter):
 class SistrExcelWriter(SistrResultsWriter):
     """A writer object for writing SISTR results to an excel spreadsheet"""
 
-    def __init__(self, irida_url, appname, username, out_file, include_reportable_status=True,
+    def __init__(self, irida_url, appname, command_line, username, out_file, include_reportable_status=True,
                  sample_created_min_date=None):
-        super(SistrExcelWriter, self).__init__(irida_url, appname, username, include_reportable_status,
+        super(SistrExcelWriter, self).__init__(irida_url, appname, command_line, username, include_reportable_status,
                                                sample_created_min_date)
         self.workbook = xlsxwriter.Workbook(out_file, {'default_date_format': 'yyyy/mm/dd'})
         self.worksheet = self.workbook.add_worksheet('Data')
