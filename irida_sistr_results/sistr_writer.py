@@ -141,7 +141,7 @@ class SistrResultsWriter(object):
         row_list = [
             project,
             result.get_sample_name()
-            ]
+        ]
 
         if self.include_reportable_status:
             row_list.append(result.get_reportable_serovar_status())
@@ -189,7 +189,7 @@ class SistrResultsWriter(object):
         row_list = [
             project,
             result.get_sample_name(),
-            ]
+        ]
 
         if self.include_reportable_status:
             row_list.append(result.get_reportable_serovar_status())
@@ -286,8 +286,10 @@ class SistrResultsWriter(object):
 class SistrCsvWriter(SistrResultsWriter):
     """An abstact writer used to create CSV/tab-delimited files"""
 
-    def __init__(self, irida_url, appname, username, out_file, include_reportable_status=True, sample_created_min_date=None):
-        super(SistrCsvWriter, self).__init__(irida_url, appname, username, include_reportable_status, sample_created_min_date)
+    def __init__(self, irida_url, appname, username, out_file, include_reportable_status=True,
+                 sample_created_min_date=None):
+        super(SistrCsvWriter, self).__init__(irida_url, appname, username, include_reportable_status,
+                                             sample_created_min_date)
         out_file_h = open(out_file, 'w')
         self.writer = csv.writer(out_file_h, delimiter="\t", quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
@@ -312,7 +314,7 @@ class SistrCsvWriter(SistrResultsWriter):
         row_list = [
             project,
             result.get_sample_name()
-            ]
+        ]
 
         if self.include_reportable_status:
             row_list.append(result.get_reportable_serovar_status())
@@ -352,8 +354,10 @@ class SistrCsvWriter(SistrResultsWriter):
 class SistrExcelWriter(SistrResultsWriter):
     """A writer object for writing SISTR results to an excel spreadsheet"""
 
-    def __init__(self, irida_url, appname, username, out_file, include_reportable_status=True, sample_created_min_date=None):
-        super(SistrExcelWriter, self).__init__(irida_url, appname, username, include_reportable_status, sample_created_min_date)
+    def __init__(self, irida_url, appname, username, out_file, include_reportable_status=True,
+                 sample_created_min_date=None):
+        super(SistrExcelWriter, self).__init__(irida_url, appname, username, include_reportable_status,
+                                               sample_created_min_date)
         self.workbook = xlsxwriter.Workbook(out_file, {'default_date_format': 'yyyy/mm/dd'})
         self.worksheet = self.workbook.add_worksheet('Data')
         self.index_of_cgmlst_percent = self._get_header_list().index('cgMLST Percent Matching')

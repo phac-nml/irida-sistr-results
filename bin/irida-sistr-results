@@ -113,16 +113,19 @@ def main(irida_url, client_id, client_secret, username, password, verbose, proje
         logger.info("Of these a total of %s are considered as reportable", total_reportable)
 
     if tabular_file is not None:
-        writer = SistrCsvWriter(irida_url, appname, username, tabular_file, not exclude_reportable_status, samples_created_min_date)
+        writer = SistrCsvWriter(irida_url, appname, username, tabular_file, not exclude_reportable_status,
+                                samples_created_min_date)
         writer.write(sistr_list)
         writer.close()
         logger.info("Wrote results to file " + tabular_file)
 
     if excel_file is not None:
-        writer = SistrExcelWriter(irida_url, appname, username, excel_file, not exclude_reportable_status, samples_created_min_date)
+        writer = SistrExcelWriter(irida_url, appname, username, excel_file, not exclude_reportable_status,
+                                  samples_created_min_date)
         writer.write(sistr_list)
         writer.close()
         logger.info("Wrote results to file " + excel_file)
+
 
 def read_serovar_list(file):
     """
@@ -136,6 +139,7 @@ def read_serovar_list(file):
         raise Exception("Error, serovar_table_file=[{}] is empty".format(REPORTABLE_SEROVARS_FILE))
 
     return serovar_list
+
 
 def get_samples_created_min_date(samples_created_since):
     """
@@ -225,7 +229,8 @@ if __name__ == '__main__':
     parser.add_argument('--exclude-user-existing-results', action='store_true', dest='exclude_user_existing_results',
                         help='If including user results, do not replace existing SISTR analysis that were automatically generated with user-run SISTR results.')
     parser.add_argument('--reportable-serovars-file', action='store', dest='reportable_serovars_file',
-                        default=REPORTABLE_SEROVARS_FILE, help='The reportable serovars file [{}].'.format(REPORTABLE_SEROVARS_FILE))
+                        default=REPORTABLE_SEROVARS_FILE,
+                        help='The reportable serovars file [{}].'.format(REPORTABLE_SEROVARS_FILE))
     parser.add_argument('--exclude-reportable-status', action='store_true', dest='exclude_reportable_status',
                         help='Excludes printing of reportable serovar status in final output.')
     parser.add_argument('-T', '--connection-timeout', action='store', dest='timeout',
