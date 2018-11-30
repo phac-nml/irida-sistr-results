@@ -11,7 +11,9 @@ from datetime import datetime
 from datetime import timedelta
 
 import appdirs
+import pandas as pd
 
+from irida_sistr_results import irida_api
 from irida_sistr_results import version
 from irida_sistr_results.CommandParseException import CommandParseException
 from irida_sistr_results.irida_api import IridaAPI
@@ -19,6 +21,8 @@ from irida_sistr_results.irida_connector import IridaConnector
 from irida_sistr_results.irida_sistr_results import IridaSistrResults
 from irida_sistr_results.irida_sistr_workflow import IridaSistrWorkflow
 from irida_sistr_results.sistr_writer import SistrCsvWriter, SistrExcelWriter
+
+REPORTABLE_SEROVARS_FILE = os.path.join(os.path.dirname(irida_api.__file__), 'data', 'reportable_serovars.tsv')
 
 conf_dir = os.path.join(os.path.dirname(os.path.realpath(version.__file__)), 'etc')
 appname = os.path.basename(__file__)
@@ -33,9 +37,10 @@ logger = logging.getLogger("irida-sistr-results")
 
 
 def main(irida_url, client_id, client_secret, username, password, verbose, projects, tabular_file, excel_file,
-         include_user_results, exclude_user_existing_results, all_projects, timeout, config, workflow_versions_or_ids,
-         samples_created_since):
+         include_user_results, exclude_user_existing_results, reportable_serovars_file, exclude_reportable_status,
+         all_projects, timeout, config, workflow_versions_or_ids, samples_created_since):
     """Main method connecting to IRIDA/writing SISTR results file."""
+
     logging.info("Running " + appname + " version " + version.__version__)
 
     samples_created_min_date = get_samples_created_min_date(samples_created_since)
@@ -54,7 +59,10 @@ def main(irida_url, client_id, client_secret, username, password, verbose, proje
         raise CommandParseException(
             "Error when connecting to IRIDA URL=[{}], Username=[{}], ClientID=[{}]. Perhaps the username/password or client_id/client_secret are invalid?".format(
                 irida_url, username, client_id)) from e
-    irida_api = IridaAPI(connector)
+
+    serovar_list = read_serovar_list(reportable_serovars_file)
+
+    irida_api = IridaAPI(connector, serovar_list)
     irida_results = IridaSistrResults(irida_api, include_user_results, not exclude_user_existing_results,
                                       workflow_versions_or_ids, samples_created_min_date)
 
@@ -71,6 +79,7 @@ def main(irida_url, client_id, client_secret, username, password, verbose, proje
     warn_sample_results = 0
     fail_sample_results = 0
     total_projects = 0
+    total_reportable = 0
     for proj in sistr_list.keys():
         total_projects += 1
         for result in sistr_list[proj].values():
@@ -86,6 +95,9 @@ def main(irida_url, client_id, client_secret, username, password, verbose, proje
             else:
                 logger.error("Somehow got wrong qc info '" + result.get_qc_status() + "'")
 
+            if result.is_reportable_serovar():
+                total_reportable += 1
+
     proj_string = 'projects' if (total_projects > 1) else 'project'
     sample_created_string = ' created more recently than ' + samples_created_min_date.isoformat(
         sep=' ') if samples_created_min_date else ''
@@ -97,17 +109,55 @@ def main(irida_url, client_id, client_secret, username, password, verbose, proje
     logger.info("FAIL:    " + str(fail_sample_results))
     logger.info("MISSING: " + str(missing_sample_results))
 
+    if not exclude_reportable_status:
+        logger.info("Of these a total of %s are considered as reportable", total_reportable)
+
+    command_line = get_command_line_string()
+
     if tabular_file is not None:
-        writer = SistrCsvWriter(irida_url, appname, username, tabular_file, samples_created_min_date)
+        writer = SistrCsvWriter(irida_url, appname, command_line, username, tabular_file, not exclude_reportable_status,
+                                samples_created_min_date)
         writer.write(sistr_list)
         writer.close()
         logger.info("Wrote results to file " + tabular_file)
 
     if excel_file is not None:
-        writer = SistrExcelWriter(irida_url, appname, username, excel_file, samples_created_min_date)
+        writer = SistrExcelWriter(irida_url, appname, command_line, username, excel_file, not exclude_reportable_status,
+                                  samples_created_min_date)
         writer.write(sistr_list)
         writer.close()
         logger.info("Wrote results to file " + excel_file)
+
+def get_command_line_string():
+    """
+    Gets the command line string.
+
+    :return: The command-line as a string.
+    """
+    PASSWORD_NAME = '--password'
+
+    command_line_list=sys.argv[:]
+
+    try:
+        password_index = command_line_list.index(PASSWORD_NAME)
+        command_line_list[password_index+1]='*****'
+    except ValueError:
+        pass
+
+    return ' '.join(command_line_list)
+
+def read_serovar_list(file):
+    """
+    Reads in the serovar list table from the given file.
+    :param file: The file containing the serovar list.
+    :return: A list containing the reportable serovars.
+    """
+    reportable_serovars = pd.read_table(file)
+    serovar_list = reportable_serovars['serovar'].tolist()
+    if not serovar_list:
+        raise Exception("Error, serovar_table_file=[{}] is empty".format(REPORTABLE_SEROVARS_FILE))
+
+    return serovar_list
 
 
 def get_samples_created_min_date(samples_created_since):
@@ -197,6 +247,11 @@ if __name__ == '__main__':
                         help='Include SISTR analysis results run directly by the user.')
     parser.add_argument('--exclude-user-existing-results', action='store_true', dest='exclude_user_existing_results',
                         help='If including user results, do not replace existing SISTR analysis that were automatically generated with user-run SISTR results.')
+    parser.add_argument('--reportable-serovars-file', action='store', dest='reportable_serovars_file',
+                        default=REPORTABLE_SEROVARS_FILE,
+                        help='The reportable serovars file [{}].'.format(REPORTABLE_SEROVARS_FILE))
+    parser.add_argument('--exclude-reportable-status', action='store_true', dest='exclude_reportable_status',
+                        help='Excludes printing of reportable serovar status in final output.')
     parser.add_argument('-T', '--connection-timeout', action='store', dest='timeout',
                         help='Connection timeout when getting results from IRIDA.')
     parser.add_argument('-c', '--config', action='store', dest='config',
