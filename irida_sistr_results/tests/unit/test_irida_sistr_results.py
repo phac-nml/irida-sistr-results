@@ -26,7 +26,7 @@ class IridaSistrResultsTest(unittest.TestCase):
                 'identifier': str(sample_id),
                 'sampleName': 'name' + str(sample_id)
             }
-        })
+        }, [])
 
     def _create_project_sistr_results(self, workflow_id, sample_ids):
         return [self._create_sistr_info(workflow_id, 'PASS', 1500000000001, sample_id) for sample_id in sample_ids]

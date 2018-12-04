@@ -6,8 +6,9 @@ from irida_sistr_results.irida_sistr_workflow import IridaSistrWorkflow
 class SampleSistrInfo(object):
     """Stores and provides access to SISTR/IRIDA information for a particular sample."""
 
-    def __init__(self, sistr_info):
+    def __init__(self, sistr_info, reportable_serovars):
         self.sistr_info = sistr_info
+        self.reportable_serovars = reportable_serovars
 
     @classmethod
     def create_empty_info(cls, sample, sequencing_object=None):
@@ -24,7 +25,9 @@ class SampleSistrInfo(object):
         if sequencing_object is not None:
             data['paired_files'] = sequencing_object
 
-        return cls(data)
+        reportable_serovars = []
+
+        return cls(data, reportable_serovars)
 
     def has_sistr_results(self):
         return self.sistr_info['has_results']
@@ -51,6 +54,19 @@ class SampleSistrInfo(object):
         else:
             return serovar_cgmlst
 
+    def get_reportable_serovar_status(self):
+        if self.has_sistr_results() and self.is_qc_pass() and self.get_serovar() in self.reportable_serovars:
+            return 'PASS'
+        else:
+            return 'FAIL'
+
+    def is_reportable_serovar(self):
+        return self.get_reportable_serovar_status() == 'PASS'
+
+    def get_reportable_status_numerical(self):
+        """Gets numerical value of reportable status, used for sorting"""
+        return ['FAIL', 'PASS'].index(self.get_reportable_serovar_status())
+
     def get_serogroup(self):
         return self._get_sistr()['serogroup']
 
@@ -62,6 +78,9 @@ class SampleSistrInfo(object):
 
     def get_o_antigen(self):
         return self._get_sistr()['o_antigen']
+
+    def is_qc_pass(self):
+        return self.get_qc_status() == 'PASS'
 
     def get_qc_status(self):
         return 'MISSING' if (not self.has_sistr_results()) else self._get_sistr()['qc_status']

@@ -28,7 +28,8 @@ setup(name='irida-sistr-results',
           'rauth>=0.7.3',
           'urllib3>=1.21.1',
           'XlsxWriter>=0.9.8',
-          'appdirs>=1.4.3'
+          'appdirs>=1.4.3',
+          'pandas>=0.23.0'
       ],
       test_suite='nose.collector',
       tests_require=['nose'],

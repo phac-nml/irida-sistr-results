@@ -8,6 +8,7 @@ LOGLEVEL_TRACE = 5
 
 logger = logging.getLogger("irida_connector")
 
+
 def decode_access_token(s):
     """
     Used to decode the access token.

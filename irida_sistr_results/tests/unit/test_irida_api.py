@@ -10,7 +10,7 @@ class IridaAPITest(unittest.TestCase):
     def setUp(self):
         self.connector = Mock()
         self.connector.get_resources = Mock()
-        self.irida_api = IridaAPI(self.connector)
+        self.irida_api = IridaAPI(self.connector, [])
         self.irida_api.get_sistr_info_from_submission = Mock(side_effect=lambda x: x['identifier'])
         self.irida_api._get_sistr_submission = Mock(side_effect=lambda x: {'identifier': x})
 
@@ -43,7 +43,7 @@ class IridaAPITest(unittest.TestCase):
             'sample': {
                 'identifier': '1',
             }
-        })
+        }, [])
 
     def test_get_sistr_submissions_for_user_single(self):
         self.connector.get_resources.return_value = self._create_user_results_state(['COMPLETED'])

@@ -1,4 +1,6 @@
 [![Build Status](https://travis-ci.org/phac-nml/irida-sistr-results.svg?branch=development)](https://travis-ci.org/phac-nml/irida-sistr-results)
+[![pypi](https://badge.fury.io/py/irida-sistr-results.svg)](https://pypi.python.org/pypi/irida-sistr-results/)
+[![conda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg)](https://anaconda.org/bioconda/irida-sistr-results)
 
 # IRIDA SISTR Results
 
@@ -77,6 +79,24 @@ irida-sistr-results -p 1 -d 2018-01-02 -u irida-user -o out.xlsx
 
 This will export results from project 1, only exporting those results from samples created since January 2, 2018.
 
+## Reportable Serovar Status column
+
+By default, the results will include a **Reportable Serovar Status** column, indicating which sample is part of a subset of serovars able to be reported.
+
+![reportable-serovar-table.png][]
+
+The list of serovars considered as **reportable** is derived from the file [reportable_serovars.tsv][]. You can override this file with `--reportable-serovars-file`.
+
+```
+irida-sistr-results -p 1 -u irida-user --reportable-serovars-file serovars-file.tsv -o out.xlsx
+```
+
+You can also disable the inclusion of this column in your results with `--exclude-reportable-status`.
+
+```
+irida-sistr-results -p 1 -u irida-user --exclude-reportable-status -o out.xlsx
+```
+
 # Installation
 
 ## Bioconda
@@ -85,6 +105,14 @@ The easiest way to get IRIDA SISTR Results is through [Bioconda][]:
 
 ```
 conda install -c bioconda irida-sistr-results
+```
+
+## PyPI/Pip
+
+You can also install `irida-sistr-results` from [PyPI][pypi-irida] using `pip`:
+
+```bash
+pip install irida-sistr-results
 ```
 
 ## Latest code
@@ -124,7 +152,9 @@ usage: irida-sistr-results [-h] [--irida-url IRIDA_URL]
                            [--password PASSWORD] [-v] [-p PROJECTS] [-a]
                            [--output-tab TABULAR_FILE] [-o EXCEL_FILE]
                            [--include-user-results]
-                           [--exclude-user-existing-results] [-T TIMEOUT]
+                           [--exclude-user-existing-results]
+                           [--reportable-serovars-file REPORTABLE_SEROVARS_FILE]
+                           [--exclude-reportable-status] [-T TIMEOUT]
                            [-c CONFIG] [-V] [-w WORKFLOW_VERSIONS_OR_IDS]
                            [-d SAMPLES_CREATED_SINCE]
 
@@ -155,6 +185,10 @@ optional arguments:
   --exclude-user-existing-results
                         If including user results, do not replace existing SISTR analysis that were automatically
                         generated with user-run SISTR results.
+  --reportable-serovars-file REPORTABLE_SEROVARS_FILE
+                        The reportable serovars file [irida_sistr_results/data/reportable_serovars.tsv].
+  --exclude-reportable-status
+                        Excludes printing of reportable serovar status in final output.
   -T TIMEOUT, --connection-timeout TIMEOUT
                         Connection timeout when getting results from IRIDA.
   -c CONFIG, --config CONFIG
@@ -206,3 +240,7 @@ specific language governing permissions and limitations under the License.
 [select-by-file]: https://irida.corefacility.ca/documentation/user/user/samples/#filtering-and-selecting-by-file
 [share-results-project]: https://irida.corefacility.ca/documentation/user/user/pipelines/#sharing-pipeline-results
 [irida-github-release]: https://github.com/phac-nml/irida/releases
+[pypi-irida]: https://pypi.python.org/pypi/irida-sistr-results/
+[reportable-serovar-table.png]: images/reportable-serovar-table.png
+[reportable_serovars.tsv]: irida_sistr_results/data/reportable_serovars.tsv
+
