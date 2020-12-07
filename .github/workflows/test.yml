@@ -1,9 +1,11 @@
 name: Python test
 
 on:
+  pull_request: # Run on all PRs
   push:
-    branches: [ development, master ]
-  pull_request:
+    branches: 
+      - development
+      - master
 
   runs-on: ubuntu-latest
   strategy:
