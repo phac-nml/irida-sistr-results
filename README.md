@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/phac-nml/irida-sistr-results.svg?branch=development)](https://travis-ci.org/phac-nml/irida-sistr-results)
+[![Build Status](https://github.com/phac-nml/irida-sistr-results/workflows/Python%20test/badge.svg)](https://github.com/phac-nml/irida-sistr-results/actions)
 [![pypi](https://badge.fury.io/py/irida-sistr-results.svg)](https://pypi.python.org/pypi/irida-sistr-results/)
 [![conda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg)](https://anaconda.org/bioconda/irida-sistr-results)
 

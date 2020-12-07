@@ -1,0 +1,25 @@
+name: Python test
+
+on:
+  pull_request: # Run on all pull requests
+  push:
+    branches:   # Run on any push to development or master
+      - development
+      - master
+
+jobs:
+  python-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.7', '3.8'] # run on python 3.7 and 3.8
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Python Install # Run the python install step
+        run: python setup.py install
+      - name: Python Test # Run the python testing step
+        run: python setup.py test
